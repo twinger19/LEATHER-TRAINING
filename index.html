@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leather Training Suite</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-serif { font-family: 'Playfair Display', serif; }
+        html { scroll-behavior: smooth; }
+        
+        /* Custom scrollbar for a premium feel */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #FDFCFB; }
+        ::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #D4D4D4; }
+    </style>
+</head>
+<body class="bg-[#FDFCFB] text-stone-900 antialiased selection:bg-amber-100 selection:text-amber-900">
+
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0?dev';
+        import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?dev';
+        import { 
+            Menu, X, Layers, Droplet, Leaf, Scissors, ZoomIn, 
+            CheckCircle, Image as ImageIcon, CreditCard, Layout,
+            Search, ArrowUpRight, Scale, Stamp, Ruler
+        } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0';
+
+        /* --- Shared Components --- */
+
+        const SectionHeading = ({ children, subtitle }) => (
+            <div className="mb-12">
+                <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mb-6 leading-tight">{children}</h2>
+                {subtitle && <p className="text-xl text-stone-600 max-w-3xl leading-relaxed">{subtitle}</p>}
+            </div>
+        );
+
+        const Card = ({ children, className = "" }) => (
+            <div className={`rounded-3xl p-8 transition-all duration-300 border border-stone-200 bg-white ${className}`}>
+                {children}
+            </div>
+        );
+
+        const AssetImage = ({ src, alt, className = "h-64" }) => {
+            const [error, setError] = useState(false);
+
+            if (error) {
+                return (
+                    <div className={`w-full ${className} bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl flex flex-col items-center justify-center text-stone-400 gap-3`}>
+                        <ImageIcon size={32} />
+                        <span className="font-mono text-xs uppercase tracking-widest px-4 text-center">Missing: {src.split('/').pop()}</span>
+                    </div>
+                );
+            }
+
+            return (
+                <img 
+                    src={src} 
+                    alt={alt} 
+                    className={`w-full ${className} object-cover rounded-2xl border border-stone-100 shadow-sm`}
+                    onError={() => setError(true)}
+                />
+            );
+        };
+
+        /* --- Data: Leather --- */
+        const leatherTypes = [
+            { title: "Full-Grain", description: "The highest quality. Retains the tightly-knit natural grain layer. Boasts incredible tear strength even when skived thin. Yields to movement and develops a rich patina over time.", tag: "Premium", bg: "bg-[#F5F0E6]", accent: "text-amber-900" },
+            { title: "Top-Grain / Corrected", description: "The natural surface is buffed to remove flaws, then coated or embossed for a completely uniform look. Retains some grain strength but loses breathability and the ability to patina.", tag: "Standard", bg: "bg-[#E8F1F2]", accent: "text-slate-800" },
+            { title: "Genuine / Split", description: "The lower 'Corium' layer separated via a splitting machine. Lacks the tight fiber structure of the grain. Often heavily PU-coated or embossed to mimic top-grain, but can peel over time.", tag: "Budget", bg: "bg-[#EFEFEF]", accent: "text-stone-600" },
+            { title: "Suede", description: "Created from the split (inner) layers of the hide and buffed to create a soft, velvet-like napped texture. Lightweight, flexible, and visually striking, though more vulnerable to moisture.", tag: "Textured", bg: "bg-[#F0EBE5]", accent: "text-stone-500" },
+            { title: "PU / Synthetic", description: "100% synthetic (Polyurethane). Offers excellent consistency, high cutting yield, stretchability, and an accessible price point. However, it lacks the breathability, durability, and natural longevity of real leather.", tag: "Synthetic", bg: "bg-[#F5F5F5]", accent: "text-stone-400" },
+            { title: "Bonded", description: "Leather scraps bonded with polyurethane. High yield, low longevity.", tag: "Composite", bg: "bg-[#FAFAFA]", accent: "text-stone-400" }
+        ];
+
+        const leatherFinishes = [
+            { title: "Aniline", description: "Dyed exclusively with soluble dyes to showcase natural texture. Extremely soft, breathable, and luxurious. Uncoated, making it highly susceptible to stains and scratches. Develops a rich patina.", tag: "Luxurious & Delicate", bg: "bg-[#F5F0E6]", accent: "text-amber-900" },
+            { title: "Semi-Aniline", description: "Coated with a light protective layer and slight pigment. Balances natural appearance with enhanced durability and uniform color. A great middle-ground for everyday items.", tag: "Balanced Durability", bg: "bg-[#E8F1F2]", accent: "text-slate-800" },
+            { title: "Pigmented", description: "Sprayed with a heavy pigment coating for a uniform appearance, completely hiding natural markings. Maximum resistance to stains and scratches, but feels stiffer and less breathable.", tag: "Maximum Protection", bg: "bg-[#EFEFEF]", accent: "text-stone-600" }
+        ];
+
+        const leatherGlossary = [
+            { term: "Altered / Corrected Grain", def: "Leather that has had the original surface removed and a new grain embossed." },
+            { term: "American Bison", def: "Stronger than traditional steer hide, supple and durable, with uncorrected natural grain." },
+            { term: "Aniline Dyeing", def: "Dyeing process where soluble dyes penetrate the hide without producing a uniform surface topcoat. Retains the natural surface, softest feel, and highest breathability, but lacks stain resistance." },
+            { term: "Antique Distressed", def: "Leather treated to age the appearance to give it a vintage look." },
+            { term: "Bark Tanning", def: "Vegetable-tanning mainly by means of tannins from the bark of trees." },
+            { term: "Belly", def: "The underside and upper part of the legs; thinnest and loosest part of the hide." },
+            { term: "Belting Leather", def: "Heavyweight, full-grain leather originally for pulley belts. Extremely strong and stiff." },
+            { term: "Blue Split", def: "Split layer treated with chromium, giving it a bluish color." },
+            { term: "Boardy Leather", def: "Leather which is stiff or not pliable." },
+            { term: "Bonded Leather", def: "Reconstituted leather made from scraps/fibers glued together. Non-elastic and tends to crack." },
+            { term: "Bovine Splits", def: "Another term for split leather from cow hides; the weaker layer remaining after the top grain is peeled away." },
+            { term: "Box Calf", def: "Chrome-tanned calfskin. Smooth, firm, with a fine grain. Common in high-end shoes and bags." },
+            { term: "Breathability", def: "Characteristic of full-grain leather to adjust to temperature and wick moisture." },
+            { term: "Bridle", def: "Firm, rich-colored leather with enough oils to withstand weather. Ideal for tack items." },
+            { term: "Brushed Grain", def: "Leather brushed to create a soft nap or fuzzy texture (suede or nubuck)." },
+            { term: "Buffalo Leather", def: "Similar to cowhide, but often thicker and with a more pronounced grain pattern. Exceptionally durable and develops a rugged character over time." },
+            { term: "Buffing", def: "Sanding the top grain layer via an abrasive cylinder to smooth imperfections." },
+            { term: "Butt", def: "The part of the hide after bellies and shoulders are removed; thickest and strongest." },
+            { term: "Bycast Leather", def: "Split leather backing with a surface layer of polyurethane (PU)." },
+            { term: "Calf Hide", def: "Skin of a young bovine. Fine grain, smooth, lightweight (4-6 sq ft)." },
+            { term: "Chamois Leather", def: "Porous leather, very soft and flexible, usually tanned with oils." },
+            { term: "Chrome Tanned", def: "Tanned with chromium salts. Produces strong, soft, pliable leather." },
+            { term: "Combination Tanned", def: "Tanned with two or more agents (e.g., chromium and vegetable). Also known as Re-tanned." },
+            { term: "Cordovan", def: "Leather from the tight, firm shell portion of horse butts." },
+            { term: "Corium", def: "The thickest middle layer of the hide with an open, disorganized fiber structure. It acts as a cushion but has less tear strength than the grain." },
+            { term: "Cowhide", def: "Unsplit cowhide. The most widely used leather (30-45 sq ft)." },
+            { term: "Crocking / Crock", def: "Transfer of color or finish from leather to other materials by rubbing." },
+            { term: "Crust", def: "Leather that has been tanned, dyed, and dried, but not finished with oils/treatments." },
+            { term: "Curried Leather", def: "Vegetable-tanned leather dressed with oils and greases for strength and flexibility." },
+            { term: "Degrained Leather", def: "Leather that has had its grain removed after tanning." },
+            { term: "Distressed Leather", def: "Tanned to exhibit an aged, vintage look." },
+            { term: "Draw", def: "Shrunken, shriveled, or wrinkled grain surface." },
+            { term: "Drum Dyeing", def: "Tumbling hides in a drum with dyes for full penetration (struck through)." },
+            { term: "Embossed Leather", def: "Leather printed with a raised pattern via heat and pressure." },
+            { term: "Enhanced Grain", def: "Lightly buffed leather embossed to simulate an attractive grain." },
+            { term: "Exotic Leather", def: "Unusual animal/reptile skins (lizard, snake, crocodile)." },
+            { term: "Fat Wrinkle", def: "Marks forming in the grain from fat deposits; a sign of uncorrected natural leather." },
+            { term: "Finish", def: "Steps after dyeing (rolling, spraying, waxing, glazing) to add resistance or color." },
+            { term: "Flesh Layer", def: "The innermost layer of the hide facing the animal, characterized by a fairly tight structure of fibers." },
+            { term: "Flesh Side", def: "The inner side of a hide or skin." },
+            { term: "Full Grain", def: "Outside original skin with hair removed but otherwise uncorrected. The highest quality." },
+            { term: "Full Hand / Round Hand", def: "Leather which is full-bodied and robust." },
+            { term: "Garment Weight", def: "Thin, supple leather (1-3oz) suitable for sewing into clothing." },
+            { term: "Glazed / Hand Glazed", def: "Surface polished to a high luster using glass on steel rollers." },
+            { term: "Goatskin", def: "Soft, resilient, natural pebbled grain. Slightly thicker than lamb." },
+            { term: "Grain", def: "The pattern characterized by pores on the outer surface." },
+            { term: "Gum Tragacanth", def: "Natural gum-based edge slicking and burnishing compound." },
+            { term: "Hand", def: "Term that describes leather softness and feel." },
+            { term: "Hand Antiqued", def: "Hand-rubbing contrasting color onto the surface to accentuate grain." },
+            { term: "Hide", def: "The outer covering of a mature or fully grown large mammal." },
+            { term: "Horse Leather", def: "Durable, abrasion-resistant. Often used for gloves or razor strops." },
+            { term: "Imitation Leather", def: "Synthetic material that looks or feels like leather." },
+            { term: "Kidskin", def: "Leather made from the skin of a young goat." },
+            { term: "Liming", def: "Process of removing hair from rawhide using chemicals." },
+            { term: "Milling", def: "Tumbling tanned hides in drums with heat/water to soften hand or enhance grain." },
+            { term: "Naked Leather", def: "Leather without treatment/finish to alter its natural state (other than dye)." },
+            { term: "Nap", def: "Napped finish created by removing the natural grain layer." },
+            { term: "Nappa", def: "Soft full-grain clothing/gloving leather from sheep, lamb, or kidskin." },
+            { term: "Nubuck", def: "Cattle hide buffed on the top grain to produce a subtle nap/matte look." },
+            { term: "Oak Tanning", def: "Tannage with vegetable extracts (originally oak bark)." },
+            { term: "Patent Leather", def: "Glossy finish giving a shiny, lustrous, mirror-like surface." },
+            { term: "Patina", def: "Surface luster that develops on pure anilines/nubucks over time." },
+            { term: "Pearlized Leather", def: "Leather with a sheen or pearl-like luster." },
+            { term: "Pebble Grain", def: "Leather embossed with a textured, pebbled pattern." },
+            { term: "Pigmented Leather", def: "Finished with a solid heavy pigment coating. Most durable, low-maintenance, and stain-resistant type of leather, though it is less breathable and hides natural markings." },
+            { term: "Plating", def: "Using a hot metal plate to press leather under high pressure to cover imperfections." },
+            { term: "Pull-up Leather", def: "Base dye layered with oils. When folded, oils displace, revealing lighter areas." },
+            { term: "Pure Aniline", def: "Aniline dyed with no additional coloring, showing all natural markings." },
+            { term: "Rawhide", def: "Hide treated only to preserve it prior to tanning." }
+        ];
+
+        /* --- Data: Belt --- */
+        const beltAnatomy = [
+            { part: "Tip", desc: "The pointed, squared-off, or tapered end opposite the buckle." },
+            { part: "Strap", desc: "The main body, typically leather or fabric." },
+            { part: "Lining", desc: "The underside of the strap, often made of a different material for comfort, stability, or style." },
+            { part: "Keeper", desc: "Loop that holds the free end of the strap after fastening." },
+            { part: "Buckle", desc: "The fastening device. Includes frame, prong, and nose." },
+            { part: "Bartack / Tab", desc: "Reinforced stitch securing buckle and keeper, or the folded return of the strap." }
+        ];
+
+        const beltEdges = [
+            { name: "Cut Round Edge", desc: "A slightly rounded cut for a better edge feel. Casual.", img: "edge-cut.jpg", bg: "bg-stone-50" },
+            { name: "Feather Edge", desc: "Rounded, blends into surface. Refined.", img: "edge-feather.jpg", bg: "bg-stone-100" },
+            { name: "Drop Edge", desc: "Distinct step-down ridge. Structural.", img: "edge-drop.jpg", bg: "bg-stone-50" },
+            { name: "Domed", desc: "Pronounced curve. Dressy.", img: "edge-domed.jpg", bg: "bg-stone-100" },
+        ];
+
+        const beltStitches = [
+            { type: "Casual", spi: "5-6 SPI", thread: "Heavy Weight", img: "stitch-casual.jpg" },
+            { type: "Refined", spi: "7-8 SPI", thread: "Medium Weight", img: "stitch-refined.jpg" },
+            { type: "Dress", spi: "9-10 SPI", thread: "Light Weight", img: "stitch-dress.jpg" },
+        ];
+
+        const beltGlossary = [
+            { term: "Arms (Buckle)", def: "The side parts of the buckle frame." },
+            { term: "Bartack", def: "A reinforced stitch used to secure the buckle and keeper." },
+            { term: "Beveled Edge", def: "An edge that is angled or sloped rather than cut straight at 90 degrees." },
+            { term: "Blunt Tip", def: "A belt tip with a squared-off, flat end." },
+            { term: "Center Bar Buckle", def: "A buckle featuring a central crossbar where the prong is mounted." },
+            { term: "Cut Round Edge", def: "A slightly rounded cut on the outer perimeter of the strap for a better edge feel." },
+            { term: "Dress Tip", def: "A pointed, formal end to the belt strap, typically standard for dress belts." },
+            { term: "Drop Edge", def: "A structural edge with a distinct step-down ridge." },
+            { term: "English Tip", def: "A traditional V-shaped pointed tip." },
+            { term: "Feather Edge", def: "An edge that tapers down to a thin point, blending into the surface." },
+            { term: "Filler", def: "Material placed between the top layer and lining to add thickness, shape, or padding (e.g., Soft Bond, EVA)." },
+            { term: "Harness Buckle", def: "A classic buckle featuring a frame (often D-shaped or square) with a center prong." },
+            { term: "Keeper", def: "A loop that holds the free end of the belt after it's fastened." },
+            { term: "Lining", def: "The underside of the belt strap, often made of a different material for comfort, durability, or style." },
+            { term: "Nose", def: "The front part of the buckle frame where the prong rests." },
+            { term: "Plaque Buckle", def: "A solid, plate-style front buckle, often featuring a logo, where the peg/prong attaches from behind." },
+            { term: "Prong", def: "The metal pin on a buckle that goes through the belt holes to secure it." },
+            { term: "Ratchet / Track Lock Buckle", def: "A buckle with a mechanism for precise adjustments without traditional holes." },
+            { term: "Reversible Belt", def: "A belt constructed to be worn with either side facing out, often utilizing a swivel buckle." },
+            { term: "Single Layer (Bridle)", def: "A belt construction using a single thick piece of material, very rugged and durable." },
+            { term: "SPI (Stitches Per Inch)", def: "The number of stitches in one inch of seam. Higher SPI generally indicates a more refined or dressy belt." },
+            { term: "Split & Recombined", def: "A construction where two layers are thinned and glued together, often to allow for a domed shape." },
+            { term: "Strap", def: "The main body of the belt." },
+            { term: "Stretch Elastic / Webbing", def: "Strong, woven or elastic fabrics used in belt construction for versatility and comfort." },
+            { term: "Tab", def: "A folded return of the strap or a small piece of material that secures the end of the belt strap to the buckle." },
+            { term: "Tapered Tip", def: "A belt tip that gradually narrows down towards the end." },
+            { term: "Tip", def: "The pointed, squared-off, or tapered end of the belt strap opposite the buckle." },
+            { term: "Trapunto", def: "A quilting technique that creates a raised, padded pattern on the leather." },
+            { term: "Turnback", def: "The folded portion of the strap that wraps around the buckle to secure it." }
+        ];
+
+        /* --- Data: Wallet --- */
+        const walletSilhouettes = [
+            { name: "Billfold / Slimfold", desc: "Classic design, folds in half. Balances capacity and slimness.", img: "sil-bifold.jpg" },
+            { name: "Passcase", desc: "A billfold featuring a removable or integrated flap with an ID window (X-Capacity).", img: "sil-passcase.jpg" },
+            { name: "Tri-fold", desc: "Folds twice into thirds. Offers more capacity but can be bulkier in the pocket.", img: "sil-trifold.jpg" },
+            { name: "Front Pocket (FPW)", desc: "Minimalist design intended for front pocket carry. Often includes a money clip or built-in magnet.", img: "sil-front-pocket.jpg" },
+            { name: "Cardcase", desc: "Ultra-slim profile designed strictly for holding a few essential cards.", img: "sil-cardcase.jpg" },
+            { name: "Organizer", desc: "Large, zip-around or snap closure wallet designed to hold currency, cards, coins, and a passport or phone.", img: "sil-organizer.jpg" },
+        ];
+
+        const walletConstruction = [
+            { title: "Turned Edge", desc: "Material is folded over and stitched. Clean, durable, and dressy.", img: "const-turned-edge.jpg" },
+            { title: "Cut Edge", desc: "Raw edge exposed, often painted or burnished. Casual and rugged.", img: "const-wallet-cut-edge.jpg" },
+            { title: "French Edge", desc: "Folded edges from both sides meet and are stitched for a highly refined look.", img: "const-french-edge.jpg" },
+            { title: "Binding", desc: "A separate material is wrapped around the raw edge and stitched for durability.", img: "const-binding.jpg" }
+        ];
+
+        const walletGlossary = [
+            { term: "Bill Compartment", def: "The area for storing cash, typically a long pocket that runs the width of the wallet. Can be single or double (divided)." },
+            { term: "Blind Emboss", def: "A logo or design pressed into the leather without the use of foil or color." },
+            { term: "Card Slots", def: "Compartments designed to hold credit cards, debit cards, and IDs. Can be horizontal or vertical." },
+            { term: "Cover", def: "The outer panel of the wallet, often featuring the brand logo." },
+            { term: "Debossing", def: "A technique that indents a design into the material." },
+            { term: "Edge Crease", def: "A decorative heated line pressed along the edge of a card slot or wallet border." },
+            { term: "Embossing", def: "A technique that raises a design from the surface of the material." },
+            { term: "ID Window", def: "A clear pocket, often using mesh or plastic, for displaying identification." },
+            { term: "Lining", def: "The interior material (twill, poly twill, chambray, denim) that protects contents and adds structure." },
+            { term: "Passcase", def: "A flap, often removable, containing an ID window. Adds capacity to a standard billfold." },
+            { term: "Perforation (Perf)", def: "A design technique using small punched holes for visual texture or breathability." },
+            { term: "RFID Protection", def: "Hidden lining that blocks radio frequency signals to prevent electronic pickpocketing." },
+            { term: "Spine", def: "The folded edge that connects the front and back panels, allowing the wallet to fold flat." },
+            { term: "Stay", def: "The center spine of the wallet's interior, often reinforced for added durability and structure." }
+        ];
+
+        /* --- Interactive Hide Diagram Component --- */
+        const InteractiveHideDiagram = () => {
+            const [hoveredPart, setHoveredPart] = useState(null);
+
+            const parts = [
+                { id: 'side', title: "Side", desc: "Half of a whole hide divided along the backbone. Best balance of yield.", color: "bg-purple-500", defaultFill: "fill-purple-500/20", hoverFill: "fill-purple-500/60" },
+                { id: 'shoulder', title: "Shoulder / Square", desc: "Neck/Upper Back. Strong, wrinkles visible. Most belts are made from here.", color: "bg-blue-500", defaultFill: "fill-blue-500/20", hoverFill: "fill-blue-500/60" },
+                { id: 'crop', title: "Crop Area", desc: "Premium section excluding bellies. High quality yield.", color: "bg-indigo-500", defaultFill: "fill-indigo-500/20", hoverFill: "fill-indigo-500/60" },
+                { id: 'butt', title: "Bend / Butt", desc: "Rear. Thickest, tightest fibers. The absolute premium cut for structural items.", color: "bg-emerald-500", defaultFill: "fill-emerald-500/20", hoverFill: "fill-emerald-500/60" },
+                { id: 'belly', title: "Belly", desc: "Underside. Stretchy, loose fibers. Used for linings or bags.", color: "bg-orange-500", defaultFill: "fill-orange-500/20", hoverFill: "fill-orange-500/60" }
+            ];
+
+            return (
+                <div className="bg-white rounded-3xl p-8 md:p-12 border border-stone-100 shadow-sm flex flex-col md:flex-row items-center gap-12 w-full">
+                    <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
+                        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
+                            <defs>
+                                <clipPath id="hide-clip">
+                                    <path d="M50,20 C60,10 80,10 90,20 C95,25 105,25 110,20 C120,10 140,10 150,20 C160,30 180,40 180,70 C180,90 170,100 175,120 C180,140 190,170 160,180 C140,185 130,170 100,175 C70,170 60,185 40,180 C10,170 20,140 25,120 C30,100 20,90 20,70 C20,40 40,30 50,20 Z" />
+                                </clipPath>
+                            </defs>
+                            
+                            <path d="M50,20 C60,10 80,10 90,20 C95,25 105,25 110,20 C120,10 140,10 150,20 C160,30 180,40 180,70 C180,90 170,100 175,120 C180,140 190,170 160,180 C140,185 130,170 100,175 C70,170 60,185 40,180 C10,170 20,140 25,120 C30,100 20,90 20,70 C20,40 40,30 50,20 Z" 
+                                  className="fill-[#F5F0E6] stroke-stone-300 stroke-2" />
+                            
+                            <g clipPath="url(#hide-clip)">
+                                {/* Belly highlight logic */}
+                                <g className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'belly' || !hoveredPart ? 'opacity-100' : 'opacity-30'}`}
+                                   onMouseEnter={() => setHoveredPart('belly')} onMouseLeave={() => setHoveredPart(null)}>
+                                    <rect x="0" y="0" width="200" height="200" className={hoveredPart === 'belly' ? parts[4].hoverFill : parts[4].defaultFill} />
+                                    <rect x="0" y="0" width="200" height="70" className="fill-[#F5F0E6]" />
+                                    <rect x="40" y="70" width="120" height="130" className="fill-[#F5F0E6]" />
+                                </g>
+
+                                {/* Side highlight logic */}
+                                <rect x="100" y="0" width="100" height="200" 
+                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'side' ? parts[0].hoverFill : (!hoveredPart ? parts[0].defaultFill : 'fill-transparent')}`}
+                                      onMouseEnter={() => setHoveredPart('side')} onMouseLeave={() => setHoveredPart(null)} />
+
+                                {/* Shoulder highlight logic */}
+                                <rect x="0" y="0" width="200" height="70" 
+                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'shoulder' ? parts[1].hoverFill : (!hoveredPart ? parts[1].defaultFill : 'fill-transparent')}`}
+                                      onMouseEnter={() => setHoveredPart('shoulder')} onMouseLeave={() => setHoveredPart(null)} />
+
+                                {/* Butt highlight logic */}
+                                <rect x="40" y="70" width="120" height="130" 
+                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'butt' ? parts[3].hoverFill : (!hoveredPart ? parts[3].defaultFill : 'fill-transparent')}`}
+                                      onMouseEnter={() => setHoveredPart('butt')} onMouseLeave={() => setHoveredPart(null)} />
+
+                                {/* Crop highlight logic */}
+                                <rect x="100" y="0" width="60" height="200" 
+                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'crop' ? parts[2].hoverFill : (!hoveredPart ? parts[2].defaultFill : 'fill-transparent')}`}
+                                      onMouseEnter={() => setHoveredPart('crop')} onMouseLeave={() => setHoveredPart(null)} />
+                            </g>
+                        </svg>
+                    </div>
+                    <div className="flex-1 space-y-4">
+                        {parts.map((part) => (
+                            <div 
+                                key={part.id}
+                                className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer flex items-start gap-4 ${hoveredPart === part.id ? 'bg-stone-50 border-stone-300 shadow-md scale-[1.02]' : 'bg-transparent border-stone-100 hover:bg-stone-50'}`}
+                                onMouseEnter={() => setHoveredPart(part.id)}
+                                onMouseLeave={() => setHoveredPart(null)}
+                            >
+                                <div className={`mt-1 w-3 h-3 rounded-full shrink-0 ${part.color}`} />
+                                <div>
+                                    <h4 className="font-bold text-stone-900">{part.title}</h4>
+                                    <p className="text-stone-500 text-sm mt-1">{part.desc}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        /* --- Modules --- */
+
+        const LeatherModule = () => {
+            const [searchTerm, setSearchTerm] = useState('');
+            const filteredGlossary = leatherGlossary.filter(item => 
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                item.def.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="space-y-32 animate-in fade-in duration-500">
+                    <section>
+                        <SectionHeading subtitle="Leather is a natural, durable material created through the tanning of animal hides.">What is Leather?</SectionHeading>
+                        <div className="grid md:grid-cols-2 gap-8">
+                            <AssetImage src="images/leather-hero-collage.jpg" alt="Collage" className="h-80" />
+                            <Card className="bg-[#F5F0E6] border-none flex flex-col justify-center">
+                                <h3 className="text-2xl font-serif text-stone-900 mb-4">Why it's Special</h3>
+                                <p className="text-stone-600 leading-relaxed mb-4">Unlike synthetics, leather breathes, stretches, and heals. Imperfections (like fat wrinkles or healed scars) are evidence of natural origin, not flaws.</p>
+                                <p className="text-stone-600 leading-relaxed">It develops a unique <strong>patina</strong> over time, ensuring pieces age beautifully and last generations.</p>
+                            </Card>
+                        </div>
+                    </section>
+
+                    {/* NEW: Hide Layers & Splitting */}
+                    <section>
+                        <SectionHeading subtitle="Understanding the layers of the skin and the modern splitting process.">Hide Layers & Splitting</SectionHeading>
+                        <div className="grid md:grid-cols-3 gap-6 mb-8">
+                            <Card className="bg-[#F9F8F6] border-stone-200">
+                                <h4 className="font-serif font-bold text-xl text-stone-900 mb-2">1. The Grain</h4>
+                                <p className="text-stone-600 text-sm leading-relaxed">The outermost layer carrying the hair follicles. Its tightly knit fibers protect against abrasions and elements. It forms the highly resilient surface of <strong>Full-Grain</strong> leather.</p>
+                            </Card>
+                            <Card className="bg-[#F9F8F6] border-stone-200">
+                                <h4 className="font-serif font-bold text-xl text-stone-900 mb-2">2. The Corium</h4>
+                                <p className="text-stone-600 text-sm leading-relaxed">The thickest middle layer. It has a more disorganized, open fiber structure that acts as a cushion. When separated by a machine, this layer becomes <strong>Split Leather</strong>.</p>
+                            </Card>
+                            <Card className="bg-[#F9F8F6] border-stone-200">
+                                <h4 className="font-serif font-bold text-xl text-stone-900 mb-2">3. The Flesh</h4>
+                                <p className="text-stone-600 text-sm leading-relaxed">The innermost layer facing the animal's body. It has a tighter fiber structure than the corium, providing a strong inner skin.</p>
+                            </Card>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="Understanding grades is key to quality selection.">Grades & Types</SectionHeading>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {leatherTypes.map((type, idx) => (
+                                <Card key={idx} className={`${type.bg} border-none h-full flex flex-col hover:shadow-lg transition-all`}>
+                                    <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-white/60 w-max mb-4 ${type.accent}`}>{type.tag}</span>
+                                    <h3 className={`text-2xl font-serif ${type.accent} mb-2`}>{type.title}</h3>
+                                    <p className="text-stone-600 text-sm flex-1">{type.description}</p>
+                                </Card>
+                            ))}
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                            {['full-grain', 'top-grain', 'split-suede', 'pu-synthetic'].map(img => (
+                                <div key={img} className="space-y-2 text-center">
+                                    <AssetImage src={`images/macro-${img}.jpg`} alt={img} className="h-40" />
+                                    <span className="text-xs text-stone-500 font-bold uppercase">{img.replace('-', ' ')}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* NEW: Leather Finishes Section */}
+                    <section>
+                        <SectionHeading subtitle="The finish applied dictates a product's breathability, softness, and maintenance needs.">Leather Finishes</SectionHeading>
+                        <div className="grid lg:grid-cols-3 gap-6 mb-8">
+                            {leatherFinishes.map((finish, idx) => (
+                                <Card key={idx} className={`${finish.bg} border-none h-full flex flex-col hover:shadow-lg transition-all`}>
+                                    <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-white/60 w-max mb-4 ${finish.accent}`}>{finish.tag}</span>
+                                    <h3 className={`text-2xl font-serif ${finish.accent} mb-2`}>{finish.title}</h3>
+                                    <p className="text-stone-600 text-sm flex-1 leading-relaxed">{finish.description}</p>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Manufacturing & Yields */}
+                    <section>
+                        <SectionHeading subtitle="Crucial metrics for production, pricing, and legal stamping.">Manufacturing Specs</SectionHeading>
+                        <div className="grid lg:grid-cols-2 gap-8">
+                            {/* Yields & Thickness */}
+                            <div className="space-y-8">
+                                <Card className="border-stone-200">
+                                    <div className="flex items-center gap-3 mb-6 text-stone-900">
+                                        <Scale className="text-amber-600" />
+                                        <h3 className="text-2xl font-serif">Belt Cutting Yields</h3>
+                                    </div>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="text-xs text-stone-500 uppercase bg-stone-50">
+                                                <tr><th className="px-4 py-3 rounded-tl-lg">Material</th><th className="px-4 py-3">32mm</th><th className="px-4 py-3">35mm</th><th className="px-4 py-3 rounded-tr-lg">38-40mm</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr className="border-b border-stone-100"><td className="px-4 py-3 font-medium">Shoulders</td><td className="px-4 py-3">.76 - .82 sqft</td><td className="px-4 py-3">.82 - .90 sqft</td><td className="px-4 py-3">.93 - 1.02 sqft</td></tr>
+                                                <tr className="border-b border-stone-100"><td className="px-4 py-3 font-medium">Double Butts</td><td className="px-4 py-3">.67 - .70 sqft</td><td className="px-4 py-3">.73 - .76 sqft</td><td className="px-4 py-3">.83 - .90 sqft</td></tr>
+                                                <tr><td className="px-4 py-3 font-medium text-stone-500">PU (Top & Lining)</td><td className="px-4 py-3 text-stone-500">.08 yds*</td><td className="px-4 py-3 text-stone-500">.086 yds*</td><td className="px-4 py-3 text-stone-500">.098 yds*</td></tr>
+                                            </tbody>
+                                        </table>
+                                        <p className="text-xs text-stone-400 mt-3">*Add 13% more to cutting yield for stretch PU materials.</p>
+                                    </div>
+                                </Card>
+                                
+                                <Card className="border-stone-200 bg-[#F0F4F8]">
+                                    <div className="flex items-center gap-3 mb-6 text-stone-900">
+                                        <Ruler className="text-blue-600" />
+                                        <h3 className="text-2xl font-serif">Thickness Guide</h3>
+                                    </div>
+                                    <ul className="space-y-3 text-sm text-stone-700">
+                                        <li className="flex justify-between border-b border-blue-200/50 pb-2"><span>Raw Leather</span><span className="font-mono">1.2mm - 3.6mm</span></li>
+                                        <li className="flex justify-between border-b border-blue-200/50 pb-2"><span>Finished Split</span><span className="font-mono">1.75mm - 1.85mm</span></li>
+                                        <li className="flex justify-between border-b border-blue-200/50 pb-2"><span>Bonded Leather</span><span className="font-mono">1.5mm - 2.5mm</span></li>
+                                        <li className="flex justify-between border-b border-blue-200/50 pb-2 font-medium pt-2"><span>Dress Belt Weight (Finished)</span><span className="font-mono text-stone-900">4.2 - 4.6mm</span></li>
+                                        <li className="flex justify-between pt-1 font-medium"><span>Casual Belt Weight (Finished)</span><span className="font-mono text-stone-900">3.2 - 4.2mm</span></li>
+                                    </ul>
+                                </Card>
+                            </div>
+
+                            {/* Stamping Guidelines */}
+                            <Card className="border-stone-200 bg-stone-900 text-white flex flex-col">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <Stamp className="text-amber-400" />
+                                    <h3 className="text-2xl font-serif text-white">Stamping Guidelines</h3>
+                                </div>
+                                <p className="text-stone-400 text-sm mb-6">Legal and industry standards for product stamping based on the material layer.</p>
+                                
+                                <div className="space-y-4 flex-1">
+                                    {[
+                                        { mat: "Top Grain Leather", stamp: "Genuine Leather" },
+                                        { mat: "Finished Split", stamp: "Leather" },
+                                        { mat: "PU Split", stamp: "Leather" },
+                                        { mat: "PU on Split", stamp: "Coated Leather" },
+                                        { mat: "Finished Bonded Leather", stamp: "Imitation Leather / Synthetic" },
+                                        { mat: "PU on Polyester", stamp: "Imitation Leather / Synthetic" },
+                                    ].map((item, i) => (
+                                        <div key={i} className="flex justify-between items-center border-b border-stone-800 pb-3">
+                                            <span className="text-sm font-medium text-stone-300">{item.mat}</span>
+                                            <span className="text-xs bg-stone-800 px-3 py-1 rounded text-amber-400 uppercase tracking-wider">{item.stamp}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="Hide location determines density, stretch, and price.">Hide Anatomy</SectionHeading>
+                        <InteractiveHideDiagram />
+                    </section>
+
+                    {/* NEW: Comprehensive Glossary with Search */}
+                    <section>
+                        <SectionHeading subtitle="The complete A-Z industry terminology.">Leather Glossary</SectionHeading>
+                        <Card className="bg-white border border-stone-100 shadow-sm">
+                            <div className="mb-8 max-w-md relative">
+                                <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search 80+ terms (e.g., Saffiano, Nappa)..."
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                                {filteredGlossary.map((item, idx) => (
+                                    <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
+                                            {item.term}
+                                        </h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">
+                                            {item.def}
+                                        </p>
+                                    </div>
+                                ))}
+                                {filteredGlossary.length === 0 && (
+                                    <div className="col-span-full py-12 text-center text-stone-500 italic">
+                                        No terminology found matching "{searchTerm}"
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    </section>
+                </div>
+            );
+        };
+
+        const BeltModule = () => {
+            const [searchTerm, setSearchTerm] = useState('');
+            const filteredGlossary = beltGlossary.filter(item => 
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                item.def.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="space-y-32 animate-in fade-in duration-500">
+                    <section>
+                        <SectionHeading subtitle="The essential parts that make up a belt.">Belt Anatomy</SectionHeading>
+                        <div className="bg-white rounded-3xl p-8 border border-stone-100 shadow-sm flex flex-col items-center w-full mb-8">
+                            <AssetImage src="images/belt-anatomy-large.jpg" alt="Belt Anatomy" className="w-full max-w-5xl h-64 md:h-96 object-contain bg-white mb-8" />
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-5xl">
+                                {beltAnatomy.map((part, i) => (
+                                    <div key={i} className="p-4 rounded-xl border border-stone-100 bg-stone-50">
+                                        <h4 className="font-bold text-stone-900 text-sm mb-1">{part.part}</h4>
+                                        <p className="text-stone-600 text-xs leading-relaxed">{part.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="Belts are crafted from diverse materials suited for different occasions.">Materials & Sizing</SectionHeading>
+                        <div className="flex flex-col gap-8">
+                            {/* Materials Row */}
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <Card className="p-6">
+                                    <h3 className="font-bold text-stone-900 mb-2">Leather</h3>
+                                    <p className="text-sm text-stone-600">A classic, durable choice. Can be a single layer (bridle) or split & recombined. Ages beautifully.</p>
+                                </Card>
+                                <Card className="p-6">
+                                    <h3 className="font-bold text-stone-900 mb-2">PU / Synthetic</h3>
+                                    <p className="text-sm text-stone-600">A highly consistent, manufactured alternative. Offers stretchability, often used in reversibles with a bonded core.</p>
+                                </Card>
+                                <Card className="p-6">
+                                    <h3 className="font-bold text-stone-900 mb-2">Fabric & Webbing</h3>
+                                    <p className="text-sm text-stone-600">Lightweight, versatile, and highly adjustable. Often utilizes stretch elastic, braided, or cotton/nylon webbing.</p>
+                                </Card>
+                            </div>
+                            
+                            {/* Sizing & Fit Full Width - High Contrast Update */}
+                            <Card className="bg-[#F9F8F6] p-8 md:p-10 border border-stone-200">
+                                <h3 className="font-serif text-3xl text-stone-900 mb-2">Sizing & Fit Specifications</h3>
+                                <p className="text-stone-600 text-sm mb-8 max-w-2xl">A properly fitted belt should fasten comfortably on the center hole. Our standard belts typically feature 5 or 7 holes to accommodate adjustment.</p>
+                                
+                                <div className="grid md:grid-cols-3 gap-8">
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
+                                            <Ruler size={20} className="text-stone-700" />
+                                            <h4 className="font-bold text-stone-900">The Golden Rule</h4>
+                                        </div>
+                                        <p className="text-sm text-stone-700"><strong>Belt Size = Waist Size + 2 Inches.</strong><br/><br/>If a customer wears a size 34 pant, they should purchase a size 36 belt.</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
+                                            <Scale size={20} className="text-stone-700" />
+                                            <h4 className="font-bold text-stone-900">Measurement Point</h4>
+                                        </div>
+                                        <p className="text-sm text-stone-700">Measure from the <strong>Tension Point</strong> (the inside nose of the buckle where the prong rests) to the <strong>Center Hole</strong> (hole #3 on a 5-hole belt, or #4 on a 7-hole belt).</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
+                                            <Layers size={20} className="text-stone-700" />
+                                            <h4 className="font-bold text-stone-900">Widths by Occasion</h4>
+                                        </div>
+                                        <ul className="text-sm text-stone-700 space-y-2">
+                                            <li className="flex justify-between"><span><strong>Dress:</strong></span> <span>32mm - 35mm</span></li>
+                                            <li className="flex justify-between"><span><strong>Casual:</strong></span> <span>35mm - 38mm</span></li>
+                                            <li className="flex justify-between"><span><strong>Denim:</strong></span> <span>38mm - 40mm</span></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </Card>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading>Construction</SectionHeading>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Rugged, durable.</p><AssetImage src="images/const-single-layer.jpg" className="h-32" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Split & Recombined</h3><p className="text-sm text-stone-500 mb-4">Domed shape.</p><AssetImage src="images/const-split-recombined.jpg" className="h-32" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Reversible</h3><p className="text-sm text-stone-500 mb-4">Two looks.</p><AssetImage src="images/const-reversible.jpg" className="h-32" /></Card>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="Edge finish defines formality.">Edge Profiles</SectionHeading>
+                        <div className="grid md:grid-cols-4 gap-4">
+                            {beltEdges.map((edge, i) => (
+                                <div key={i} className={`${edge.bg} p-6 rounded-2xl text-center`}>
+                                    <h4 className="font-serif font-bold mb-2">{edge.name}</h4><p className="text-xs text-stone-500 mb-4">{edge.desc}</p>
+                                    <AssetImage src={`images/${edge.img}`} className="h-24" />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="SPI indicates refinement.">Stitching Details</SectionHeading>
+                        <div className="grid md:grid-cols-3 gap-6">
+                            {beltStitches.map((stitch, i) => (
+                                <Card key={i}>
+                                    <div className="flex justify-between items-end mb-4">
+                                        <h4 className="font-bold text-stone-900">{stitch.type}</h4>
+                                        <span className="text-amber-600 font-mono text-sm bg-amber-50 px-2 py-1 rounded">{stitch.spi}</span>
+                                    </div>
+                                    <p className="text-stone-500 text-sm mb-4">{stitch.thread}</p>
+                                    <AssetImage src={`images/${stitch.img}`} alt={stitch.type} className="h-24" />
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading>Buckle Types</SectionHeading>
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                            {["Harness", "Center Bar", "Plaque", "Reversible", "Track Lock", "Compression"].map((b, i) => (
+                                <div key={i} className="bg-white p-6 rounded-2xl border border-stone-100 text-center flex flex-col items-center">
+                                    <AssetImage src={`images/buckle-${b.toLowerCase().replace(' ', '-')}.jpg`} className="h-48 w-full object-contain mb-4" />
+                                    <span className="block mt-3 text-lg font-medium text-stone-900">{b}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* NEW: Belt Glossary */}
+                    <section>
+                        <SectionHeading subtitle="Key terminology for belt construction and components.">Belt Glossary</SectionHeading>
+                        <Card className="bg-white border border-stone-100 shadow-sm">
+                            <div className="mb-8 max-w-md relative">
+                                <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search belt terms..."
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                                {filteredGlossary.map((item, idx) => (
+                                    <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
+                                            {item.term}
+                                        </h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">
+                                            {item.def}
+                                        </p>
+                                    </div>
+                                ))}
+                                {filteredGlossary.length === 0 && (
+                                    <div className="col-span-full py-12 text-center text-stone-500 italic">
+                                        No terminology found matching "{searchTerm}"
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    </section>
+                </div>
+            );
+        };
+
+        const WalletModule = () => {
+            const [searchTerm, setSearchTerm] = useState('');
+            const filteredGlossary = walletGlossary.filter(item => 
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                item.def.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="space-y-32 animate-in fade-in duration-500">
+                    <section>
+                        <SectionHeading subtitle="Complex construction in a compact package.">Wallet Anatomy</SectionHeading>
+                        <div className="grid lg:grid-cols-2 gap-12">
+                            <Card className="bg-[#F9F8F6] border-stone-200">
+                                <h3 className="text-2xl font-bold font-serif mb-6 flex items-center gap-3 text-stone-900"><Layout size={24} className="text-amber-600"/> Exterior</h3>
+                                <AssetImage src="images/wallet-anatomy-exterior.png" className="h-64 object-contain mix-blend-multiply mb-6" />
+                                <ul className="space-y-4 text-sm text-stone-700">
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Cover:</strong> The outer panel, provides protection and primary aesthetic appeal.</span></li>
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Spine:</strong> The folded edge connecting front and back panels, allowing it to fold flat.</span></li>
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Ornament / Logo:</strong> External branding, usually embossed or applied via metal hardware.</span></li>
+                                </ul>
+                            </Card>
+                            <Card className="bg-[#F9F8F6] border-stone-200">
+                                <h3 className="text-2xl font-bold font-serif mb-6 flex items-center gap-3 text-stone-900"><CreditCard size={24} className="text-amber-600"/> Interior</h3>
+                                <AssetImage src="images/wallet-anatomy-interior.png" className="h-64 object-contain mix-blend-multiply mb-6" />
+                                <ul className="space-y-4 text-sm text-stone-700">
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Card Slots & Pocket Shapes:</strong> Storage for cards, defined by specific edge creasing or shaping.</span></li>
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Stay:</strong> The center spine reinforcement inside the bill compartment.</span></li>
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Bill Divider:</strong> A panel separating the main cash compartment into two sections.</span></li>
+                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>ID Window:</strong> A mesh or clear plastic slot for displaying identification.</span></li>
+                                </ul>
+                            </Card>
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="The form factor is defined by function, carry preference, and capacity needs.">Silhouette Buckets</SectionHeading>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {walletSilhouettes.map((item, i) => (
+                                <Card key={i} className="hover:-translate-y-1 transition-transform border-stone-200">
+                                    <h3 className="text-2xl font-serif text-stone-900 mb-2">{item.name}</h3>
+                                    <p className="text-sm text-stone-600 mb-6 h-12">{item.desc}</p>
+                                    <AssetImage src={`images/${item.img}`} className="h-48 object-cover" />
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section>
+                        <SectionHeading subtitle="How the edges are treated defines the formality and durability of the wallet.">Edge Construction</SectionHeading>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {walletConstruction.map((item, i) => (
+                                <div key={i} className="p-6 bg-white rounded-3xl border border-stone-200 text-center flex flex-col items-center shadow-sm">
+                                    <h4 className="font-bold text-lg mb-2 text-stone-900">{item.title}</h4>
+                                    <p className="text-xs text-stone-600 mb-6 h-10">{item.desc}</p>
+                                    <AssetImage src={`images/${item.img}`} alt={item.title} className="h-24 w-full object-cover rounded-xl" />
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                    
+                    <section>
+                        <SectionHeading subtitle="Techniques used to elevate the aesthetic and functionality.">Design & Branding Details</SectionHeading>
+                        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                <AssetImage src="images/detail-emboss.jpg" alt="Blind Emboss Logo" className="h-32" />
+                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Blind Emboss</p>
+                            </div>
+                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                <AssetImage src="images/detail-perf.jpg" alt="Perforation" className="h-32" />
+                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Perforation (Perf)</p>
+                            </div>
+                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                <AssetImage src="images/detail-hardware.jpg" alt="Metal Hardware" className="h-32" />
+                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Metal Ornament</p>
+                            </div>
+                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                <AssetImage src="images/detail-lining.jpg" alt="Lining Fabric" className="h-32" />
+                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Hidden Lining / RFID</p>
+                            </div>
+                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                <AssetImage src="images/detail-moneyclip.jpg" alt="Money Clip" className="h-32" />
+                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Money Clip</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* NEW: Wallet Glossary */}
+                    <section>
+                        <SectionHeading subtitle="Key terminology for wallet construction and components.">Wallet Glossary</SectionHeading>
+                        <Card className="bg-white border border-stone-100 shadow-sm">
+                            <div className="mb-8 max-w-md relative">
+                                <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search wallet terms..."
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                                {filteredGlossary.map((item, idx) => (
+                                    <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
+                                            {item.term}
+                                        </h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">
+                                            {item.def}
+                                        </p>
+                                    </div>
+                                ))}
+                                {filteredGlossary.length === 0 && (
+                                    <div className="col-span-full py-12 text-center text-stone-500 italic">
+                                        No terminology found matching "{searchTerm}"
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    </section>
+                </div>
+            );
+        };
+
+        /* --- Main App --- */
+
+        const App = () => {
+            const [activeModule, setActiveModule] = useState('leather');
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [scrolled, setScrolled] = useState(false);
+
+            useEffect(() => {
+                const handleScroll = () => setScrolled(window.scrollY > 50);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const renderModule = () => {
+                switch(activeModule) {
+                    case 'leather': return <LeatherModule />;
+                    case 'belt': return <BeltModule />;
+                    case 'wallet': return <WalletModule />;
+                    default: return <LeatherModule />;
+                }
+            };
+
+            const getHeroContent = () => {
+                switch(activeModule) {
+                    case 'leather': return {
+                        title: <span>Leather <br/><span className="italic text-stone-400">101.</span></span>,
+                        desc: "The essential guide to grades, anatomy, yields, and terminology."
+                    };
+                    case 'belt': return {
+                        title: <span>Belt <br/><span className="italic text-stone-400">101.</span></span>,
+                        desc: "Construction, hardware, and edge finishing."
+                    };
+                    case 'wallet': return {
+                        title: <span>Wallet <br/><span className="italic text-stone-400">101.</span></span>,
+                        desc: "Silhouettes, details, and functional design."
+                    };
+                    default: return {};
+                }
+            };
+
+            const hero = getHeroContent();
+
+            return (
+                <div className="min-h-screen bg-[#FDFCFB]">
+                    
+                    {/* Ambient Background */}
+                    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-amber-50/50 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-pulse"></div>
+                        <div className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] bg-stone-100/50 rounded-full blur-[120px] mix-blend-multiply opacity-60"></div>
+                    </div>
+
+                    {/* Navigation */}
+                    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#FDFCFB]/80 backdrop-blur-xl border-b border-stone-200 py-3' : 'bg-transparent py-6'}`}>
+                        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+                            <div className="flex items-center gap-4 text-stone-900">
+                                {/* Randa Logo Placeholder */}
+                                <div className="h-8 w-24 relative flex items-center justify-center bg-stone-100 border border-stone-200 rounded">
+                                    <span className="text-[10px] font-bold text-stone-400">RANDA LOGO</span>
+                                    {/* Uncomment and update src below when you have the actual logo */}
+                                    {/* <img src="images/randa-logo.png" alt="Randa Apparel & Accessories" className="absolute inset-0 w-full h-full object-contain" /> */}
+                                </div>
+                                <div className="h-6 w-px bg-stone-300 hidden md:block"></div>
+                                <span className="font-serif font-semibold text-xl tracking-tight hidden md:inline-block">
+                                    {activeModule.charAt(0).toUpperCase() + activeModule.slice(1)}
+                                    <span className="text-stone-400 font-sans">101</span>
+                                </span>
+                            </div>
+                            
+                            {/* Module Switcher (Desktop) */}
+                            <div className="hidden md:flex items-center gap-2 bg-white/50 p-1 rounded-full border border-stone-200 backdrop-blur-sm">
+                                {['leather', 'belt', 'wallet'].map(mod => (
+                                    <button 
+                                        key={mod}
+                                        onClick={() => { setActiveModule(mod); window.scrollTo(0,0); }}
+                                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeModule === mod ? 'bg-stone-900 text-white shadow-md' : 'text-stone-500 hover:text-stone-900'}`}
+                                    >
+                                        {mod.charAt(0).toUpperCase() + mod.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Mobile Toggle */}
+                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-stone-900">
+                                {isMenuOpen ? <X /> : <Menu />}
+                            </button>
+                        </div>
+                    </nav>
+
+                    {/* Mobile Drawer */}
+                    {isMenuOpen && (
+                        <div className="fixed inset-0 z-40 bg-[#FDFCFB] pt-24 px-6 md:hidden overflow-y-auto">
+                            <div className="flex flex-col gap-6">
+                                {['leather', 'belt', 'wallet'].map(mod => (
+                                    <button 
+                                        key={mod}
+                                        onClick={() => { setActiveModule(mod); setIsMenuOpen(false); window.scrollTo(0,0); }}
+                                        className="text-2xl font-serif text-left border-b border-stone-100 pb-4 text-stone-900 font-bold"
+                                    >
+                                        {mod.charAt(0).toUpperCase() + mod.slice(1)} 101
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Hero */}
+                    <header className="relative pt-40 pb-24 px-6 z-10">
+                        <div className="max-w-5xl mx-auto text-center animate-in slide-in-from-bottom-4 duration-700">
+                            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-stone-200 text-stone-600 text-xs font-bold uppercase tracking-widest mb-8 shadow-sm">
+                                Training Module 1.0
+                            </div>
+                            <h1 className="text-6xl md:text-8xl font-serif text-stone-900 mb-8 leading-[0.95] tracking-tight">
+                                {hero.title}
+                            </h1>
+                            <p className="text-xl md:text-2xl text-stone-500 mb-12 max-w-2xl mx-auto leading-relaxed">
+                                {hero.desc}
+                            </p>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-7xl mx-auto px-6 pb-32 relative z-10">
+                        {renderModule()}
+                    </main>
+                    
+                    <footer className="py-20 bg-white border-t border-stone-100 mt-20">
+                        <div className="max-w-7xl mx-auto px-6 text-center">
+                            <div className="flex flex-col items-center justify-center gap-4 mb-8 opacity-60">
+                                {/* Randa Logo Placeholder (Footer) */}
+                                <div className="h-8 w-24 relative flex items-center justify-center bg-stone-100 border border-stone-200 rounded">
+                                    <span className="text-[10px] font-bold text-stone-400">RANDA LOGO</span>
+                                    {/* Uncomment and update src below when you have the actual logo */}
+                                    {/* <img src="images/randa-logo.png" alt="Randa Apparel & Accessories" className="absolute inset-0 w-full h-full object-contain" /> */}
+                                </div>
+                                <span className="font-serif font-bold text-xl">Product Education</span>
+                            </div>
+                            <p className="text-stone-400 text-sm">© 2026 Randa Apparel & Accessories. Internal Use Only.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
