@@ -761,12 +761,17 @@
 
                         {/* Intro banner */}
                         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 mb-8 flex flex-col md:flex-row gap-6 items-start">
-                            <div className="shrink-0 w-28 flex items-center justify-center">
-                                <AssetImage
+                            <div className="shrink-0 w-32 bg-white rounded-2xl p-3 flex items-center justify-center shadow-sm border border-amber-100">
+                                <img
                                     src="images/lwg-logo.png"
                                     alt="Leather Working Group Logo"
-                                    className="h-20 w-full object-contain"
+                                    className="w-full h-auto object-contain"
+                                    onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
                                 />
+                                <div style={{display:'none'}} className="w-full h-20 flex flex-col items-center justify-center text-amber-400 gap-1">
+                                    <Award size={28} />
+                                    <span className="text-xs text-amber-600 font-semibold">LWG</span>
+                                </div>
                             </div>
                             <div>
                                 <h3 className="font-serif font-bold text-xl text-stone-900 mb-2">What is the Leather Working Group?</h3>
