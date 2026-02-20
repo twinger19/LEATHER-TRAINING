@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Randa Accessories - Training 101</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
@@ -18,12 +18,22 @@
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3, h4, h5, h6, .font-serif { font-family: 'Playfair Display', serif; }
         html { scroll-behavior: smooth; }
-        
-        /* Custom scrollbar for a premium feel */
+
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #FDFCFB; }
         ::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #D4D4D4; }
+
+        /* Print Styles */
+        @media print {
+            .no-print { display: none !important; }
+            nav { display: none !important; }
+            .fixed { position: static !important; }
+            body { background: white !important; }
+            * { animation: none !important; transition: none !important; box-shadow: none !important; }
+            header { padding-top: 2rem !important; }
+            section { page-break-inside: avoid; }
+        }
     </style>
 </head>
 <body class="bg-[#FDFCFB] text-stone-900 antialiased selection:bg-amber-100 selection:text-amber-900">
@@ -31,18 +41,40 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
-        import React, { useState, useEffect } from 'https://esm.sh/react@18.2.0?dev';
+        import React, { useState, useEffect, useMemo } from 'https://esm.sh/react@18.2.0?dev';
         import { createRoot } from 'https://esm.sh/react-dom@18.2.0/client?dev';
-        import { 
-            Menu, X, Layers, Droplet, Leaf, Scissors, ZoomIn, CheckCircle, 
+        import {
+            Menu, X, Layers, Droplet, Leaf, Scissors, ZoomIn, CheckCircle,
             AlertCircle, Search, ArrowUpRight, Ruler, Globe, Tag, Image as ImageIcon,
-            CreditCard, CircleDashed, Layout, PenTool, Scale, Stamp
+            CreditCard, CircleDashed, Layout, PenTool, Scale, Stamp,
+            ArrowUp, Shield, Printer, Wifi
         } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0';
+
+        /* -------------------------------------------------------------
+           ERROR BOUNDARY
+           ------------------------------------------------------------- */
+        class ErrorBoundary extends React.Component {
+            constructor(props) { super(props); this.state = { hasError: false }; }
+            static getDerivedStateFromError() { return { hasError: true }; }
+            render() {
+                if (this.state.hasError) {
+                    return (
+                        <div className="min-h-screen flex items-center justify-center p-12 text-center">
+                            <div>
+                                <h2 className="text-2xl font-serif text-stone-900 mb-4">Something went wrong</h2>
+                                <p className="text-stone-500 mb-6">Please refresh the page to continue.</p>
+                                <button onClick={() => window.location.reload()} className="px-6 py-3 bg-stone-900 text-white rounded-full text-sm font-medium">Refresh Page</button>
+                            </div>
+                        </div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
 
         /* -------------------------------------------------------------
            SHARED COMPONENTS
            ------------------------------------------------------------- */
-
         const SectionHeading = ({ children, subtitle, centered = false }) => (
           <div className={`mb-12 ${centered ? 'text-center' : ''}`}>
             <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mb-6 leading-tight">{children}</h2>
@@ -58,7 +90,6 @@
 
         const AssetImage = ({ src, alt, className = "h-64" }) => {
           const [error, setError] = useState(false);
-
           if (error) {
             return (
               <div className={`w-full ${className} bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl flex flex-col items-center justify-center text-stone-400 gap-3`}>
@@ -67,21 +98,84 @@
               </div>
             );
           }
-
           return (
-            <img 
-              src={src} 
-              alt={alt} 
+            <img src={src} alt={alt}
               className={`w-full ${className} object-cover rounded-2xl border border-stone-100 shadow-sm`}
-              onError={() => setError(true)}
-            />
+              onError={() => setError(true)} />
           );
+        };
+
+        /* Jump navigation — links within a module */
+        const JumpNav = ({ links }) => (
+          <div className="flex gap-2 flex-wrap mb-12 pb-4 border-b border-stone-100 no-print overflow-x-auto">
+            {links.map((link, i) => (
+              <button key={i}
+                onClick={() => document.getElementById(link.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                className="px-4 py-1.5 rounded-full text-xs font-medium bg-stone-100 text-stone-600 hover:bg-stone-900 hover:text-white transition-all whitespace-nowrap shrink-0">
+                {link.label}
+              </button>
+            ))}
+          </div>
+        );
+
+        /* -------------------------------------------------------------
+           GLOBAL SEARCH OVERLAY
+           ------------------------------------------------------------- */
+        const GlobalSearchOverlay = ({ onClose }) => {
+            const [query, setQuery] = useState('');
+
+            const results = useMemo(() => {
+                if (!query.trim()) return [];
+                const q = query.toLowerCase();
+                const lr = leatherGlossary.filter(i => i.term.toLowerCase().includes(q) || i.def.toLowerCase().includes(q)).map(i => ({ ...i, category: 'Leather' }));
+                const br = beltGlossary.filter(i => i.term.toLowerCase().includes(q) || i.def.toLowerCase().includes(q)).map(i => ({ ...i, category: 'Belt' }));
+                const wr = walletGlossary.filter(i => i.term.toLowerCase().includes(q) || i.def.toLowerCase().includes(q)).map(i => ({ ...i, category: 'Wallet' }));
+                return [...lr, ...br, ...wr];
+            }, [query]);
+
+            useEffect(() => {
+                const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+                window.addEventListener('keydown', handleKey);
+                return () => window.removeEventListener('keydown', handleKey);
+            }, [onClose]);
+
+            return (
+                <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-start justify-center pt-20 px-4 no-print" onClick={onClose}>
+                    <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-stone-100">
+                            <div className="relative">
+                                <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
+                                <input autoFocus type="text" placeholder="Search all glossaries — Leather, Belt, Wallet..."
+                                    value={query} onChange={e => setQuery(e.target.value)}
+                                    className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors" />
+                            </div>
+                        </div>
+                        <div className="max-h-[55vh] overflow-y-auto p-6 space-y-3">
+                            {!query && <p className="text-center text-stone-400 italic py-8">Start typing to search across all glossaries...</p>}
+                            {query && results.length === 0 && <p className="text-center text-stone-400 italic py-8">No results found for "{query}"</p>}
+                            {results.map((item, i) => (
+                                <div key={i} className="flex items-start gap-4 p-3 rounded-xl hover:bg-stone-50">
+                                    <span className={`text-xs font-bold px-2 py-1 rounded-full shrink-0 mt-0.5 ${item.category === 'Leather' ? 'bg-amber-100 text-amber-800' : item.category === 'Belt' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                        {item.category}
+                                    </span>
+                                    <div>
+                                        <h4 className="font-bold text-stone-900 text-sm">{item.term}</h4>
+                                        <p className="text-xs text-stone-500 mt-1 leading-relaxed">{item.def}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="p-4 border-t border-stone-100 text-center">
+                            <button onClick={onClose} className="text-xs text-stone-400 hover:text-stone-600">Press ESC to close</button>
+                        </div>
+                    </div>
+                </div>
+            );
         };
 
         /* -------------------------------------------------------------
            DATA: LEATHER 101
            ------------------------------------------------------------- */
-
         const leatherTypes = [
             { title: "Full-Grain", description: "The highest quality. Retains the tightly-knit natural grain layer. Boasts incredible tear strength even when skived thin. Yields to movement and develops a rich patina over time.", tag: "Premium", bg: "bg-[#F5F0E6]", accent: "text-amber-900" },
             { title: "Top-Grain / Corrected", description: "The natural surface is buffed to remove flaws, then coated or embossed for a completely uniform look. Retains some grain strength but loses breathability and the ability to patina.", tag: "Standard", bg: "bg-[#E8F1F2]", accent: "text-slate-800" },
@@ -91,10 +185,24 @@
             { title: "Bonded", description: "Leather scraps bonded with polyurethane. High yield, low longevity.", tag: "Composite", bg: "bg-[#FAFAFA]", accent: "text-stone-400" }
         ];
 
+        const tanningMethods = [
+            { title: "Chrome Tanning", tag: "~80% of Global Production", bg: "bg-[#E8F1F2]", accent: "text-slate-800", icon: "Droplet", description: "Uses chromium sulfate salts in a fast 1–2 day process. Produces soft, pliable, water-resistant leather in a wide color range. The industry standard for most consumer goods, garments, and accessories.", pros: ["Soft & supple immediately", "Consistent & uniform results", "Water & heat resistant", "Broad color range"], cons: ["Chromium waste requires management", "No patina development", "Less eco-friendly"] },
+            { title: "Vegetable Tanning", tag: "Traditional & Sustainable", bg: "bg-[#F5F0E6]", accent: "text-amber-900", icon: "Leaf", description: "Uses plant-based tannins from oak, chestnut, and mimosa bark. A slow process (weeks to months) producing firm, natural-colored leather that develops a rich, unique patina. The gold standard for structured belts and heirloom goods.", pros: ["Develops a rich patina", "Biodegradable & eco-friendly", "Firms and improves with age", "Natural, breathable feel"], cons: ["Expensive & time-consuming", "Less water-resistant initially", "Limited color options"] },
+            { title: "Combination / Re-tanning", tag: "Hybrid", bg: "bg-[#EFEFEF]", accent: "text-stone-600", icon: "Layers", description: "Starts with chrome tanning for softness and stability, then re-tanned with vegetable agents for body and firmness. Balances the best of both methods. Commonly used in premium structured belts.", pros: ["Best of both methods", "Good structure with softness", "More versatile than pure veg-tan"], cons: ["More complex process", "Higher cost than chrome-only"] },
+            { title: "Aldehyde Tanning", tag: "Specialty", bg: "bg-[#F0EBE5]", accent: "text-stone-500", icon: "CircleDashed", description: "Uses glutaraldehyde or oxazolidine compounds. Produces extremely soft, washable, chrome-free leather. Often used for chamois, automotive interiors, and sensitive-skin applications.", pros: ["Machine washable", "Chrome-free option", "Extremely soft hand"], cons: ["Not ideal for structured goods", "Niche applications only"] },
+        ];
+
         const leatherFinishes = [
             { title: "Aniline", description: "Dyed exclusively with soluble dyes to showcase natural texture. Extremely soft, breathable, and luxurious. Uncoated, making it highly susceptible to stains and scratches. Develops a rich patina.", tag: "Luxurious & Delicate", bg: "bg-[#F5F0E6]", accent: "text-amber-900" },
             { title: "Semi-Aniline", description: "Coated with a light protective layer and slight pigment. Balances natural appearance with enhanced durability and uniform color. A great middle-ground for everyday items.", tag: "Balanced Durability", bg: "bg-[#E8F1F2]", accent: "text-slate-800" },
             { title: "Pigmented", description: "Sprayed with a heavy pigment coating for a uniform appearance, completely hiding natural markings. Maximum resistance to stains and scratches, but feels stiffer and less breathable.", tag: "Maximum Protection", bg: "bg-[#EFEFEF]", accent: "text-stone-600" }
+        ];
+
+        const leatherCare = [
+            { title: "Conditioning", icon: "Droplet", bg: "bg-[#F5F0E6]", tips: ["Apply a quality leather conditioner every 3–6 months", "Use small circular motions with a soft cloth", "Avoid petroleum-based or silicone products on aniline leather", "Allow to absorb naturally — never dry near direct heat"] },
+            { title: "Cleaning", icon: "Scissors", bg: "bg-[#E8F1F2]", tips: ["Wipe lightly soiled areas with a barely damp cloth", "Use a pH-balanced leather cleaner for stains", "Never soak or saturate leather with water", "Always test any product on a hidden area first"] },
+            { title: "Storage", icon: "Layers", bg: "bg-[#EFEFEF]", tips: ["Store in a cool, dry space away from direct sunlight", "Stuff bags and wallets with tissue to hold shape", "Use breathable dust bags — never airtight plastic", "Avoid storing belts tightly rolled for extended periods"] },
+            { title: "Patina & Aging", icon: "Leaf", bg: "bg-[#F0EBE5]", tips: ["On full-grain & veg-tan leather, patina is a feature, not a flaw", "Light buffing with a dry cloth brings out natural luster", "Minor surface scratches on full-grain can often be buffed out", "Aniline leather will darken beautifully with oils and handling"] },
         ];
 
         const leatherGlossary = [
@@ -166,13 +274,26 @@
             { term: "Plating", def: "Using a hot metal plate to press leather under high pressure to cover imperfections." },
             { term: "Pull-up Leather", def: "Base dye layered with oils. When folded, oils displace, revealing lighter areas." },
             { term: "Pure Aniline", def: "Aniline dyed with no additional coloring, showing all natural markings." },
-            { term: "Rawhide", def: "Hide treated only to preserve it prior to tanning." }
+            { term: "Rawhide", def: "Hide treated only to preserve it prior to tanning." },
+            { term: "Saffiano", def: "A cross-hatch embossed leather pattern known for its scratch resistance and easy-clean surface. Widely used in structured accessories and luxury goods." },
+            { term: "Saddle Leather", def: "Firm, full-grain, vegetable-tanned leather originally made for equestrian equipment. Dense, durable, and develops excellent structure with use." },
+            { term: "Semi-Aniline", def: "Leather dyed with soluble dyes and given a light protective topcoat. Balances natural appearance with enhanced stain and wear resistance." },
+            { term: "Shrunken Grain", def: "Leather treated in warm water after tanning to produce a naturally crinkled, pebbled surface appearance." },
+            { term: "Skiving", def: "The process of thinning leather by shaving material from the flesh side to reduce bulk at edges and seams for cleaner, flatter construction." },
+            { term: "Sole Leather", def: "Heavy, firm, vegetable-tanned leather primarily used for shoe soles. Extremely dense fiber structure." },
+            { term: "Splitting", def: "The industrial process of separating a thick hide into layers (grain layer and split/corium layer) using a band knife splitting machine." },
+            { term: "Tanning", def: "The overall process of converting raw animal hides into stable, durable leather through chemical or natural means to prevent decomposition." },
+            { term: "Temper", def: "The degree of moisture content and pliability in leather at any given stage of production." },
+            { term: "Top Coat / Top Finish", def: "The final protective layer applied over dyed leather, providing color uniformity, sheen, and resistance to staining or abrasion." },
+            { term: "Vachetta", def: "Untreated, vegetable-tanned leather used for trim and handles on luxury goods. Honey-colored when new, darkens to a rich tan patina with UV and oil exposure." },
+            { term: "Vegetable Tanned", def: "Leather tanned using natural plant-based tannins (oak, chestnut, mimosa). Firm, eco-friendly, and develops a unique patina over time." },
+            { term: "Waxed Leather", def: "Leather saturated with natural waxes that visibly displace when bent or scratched, revealing lighter areas. Emphasizes a rugged, lived-in character." },
+            { term: "Waterproofing", def: "A topical treatment (wax, silicone, or spray) applied to leather to repel moisture. May slightly alter texture and surface sheen." }
         ];
 
         /* -------------------------------------------------------------
            DATA: BELT 101
            ------------------------------------------------------------- */
-
         const beltAnatomy = [
             { part: "Tip", desc: "The pointed, squared-off, or tapered end opposite the buckle." },
             { part: "Strap", desc: "The main body, typically leather or fabric." },
@@ -230,7 +351,6 @@
         /* -------------------------------------------------------------
            DATA: WALLET 101
            ------------------------------------------------------------- */
-           
         const walletSilhouettes = [
             { name: "Billfold / Slimfold", desc: "Classic design, folds in half. Balances capacity and slimness.", img: "sil-bifold.jpg" },
             { name: "Passcase", desc: "A billfold featuring a removable or integrated flap with an ID window (X-Capacity).", img: "sil-passcase.jpg" },
@@ -247,6 +367,13 @@
             { title: "Binding", desc: "A separate material is wrapped around the raw edge and stitched for durability.", img: "const-binding.jpg" }
         ];
 
+        const rfidInfo = [
+            { q: "What is RFID / NFC?", a: "Radio Frequency Identification — a wireless technology that stores and transmits data via radio waves. Contactless credit cards, debit cards, and US passports all contain embedded RFID/NFC chips that allow tap-to-pay transactions." },
+            { q: "What is RFID Skimming?", a: "A form of electronic theft where a criminal uses a concealed scanner to remotely read card data from RFID-enabled cards in a wallet or pocket — without any physical contact. The card never leaves the victim's possession." },
+            { q: "How Does RFID Blocking Work?", a: "A thin metallic lining (usually aluminum or copper mesh) woven into the wallet's interior creates a Faraday cage — a barrier that absorbs and reflects the radio frequency signals, preventing unauthorized scanners from reading card data." },
+            { q: "Which Cards Have RFID?", a: "Most contactless credit and debit cards issued after 2015 (look for the wave symbol ))) on the card face). Also: US Passports (since 2007), Global Entry / NEXUS cards, many transit cards, and some hotel key cards." },
+        ];
+
         const walletGlossary = [
             { term: "Bill Compartment", def: "The area for storing cash, typically a long pocket that runs the width of the wallet. Can be single or double (divided)." },
             { term: "Blind Emboss", def: "A logo or design pressed into the leather without the use of foil or color." },
@@ -259,100 +386,134 @@
             { term: "Lining", def: "The interior material (twill, poly twill, chambray, denim) that protects contents and adds structure." },
             { term: "Passcase", def: "A flap, often removable, containing an ID window. Adds capacity to a standard billfold." },
             { term: "Perforation (Perf)", def: "A design technique using small punched holes for visual texture or breathability." },
-            { term: "RFID Protection", def: "Hidden lining that blocks radio frequency signals to prevent electronic pickpocketing." },
+            { term: "RFID Protection", def: "Hidden metallic lining (Faraday cage) that blocks radio frequency signals to prevent electronic card skimming." },
             { term: "Spine", def: "The folded edge that connects the front and back panels, allowing the wallet to fold flat." },
             { term: "Stay", def: "The center spine of the wallet's interior, often reinforced for added durability and structure." }
         ];
 
         /* -------------------------------------------------------------
-           COMPONENTS
+           INTERACTIVE HIDE DIAGRAM
            ------------------------------------------------------------- */
-
         const InteractiveHideDiagram = () => {
-            const [hoveredPart, setHoveredPart] = useState(null);
+            const [activepart, setActivePart] = useState(null);
 
             const parts = [
-                { id: 'side', title: "Side", desc: "Half of a whole hide divided along the backbone. Best balance of yield.", color: "bg-purple-500", defaultFill: "fill-purple-500/20", hoverFill: "fill-purple-500/60" },
-                { id: 'shoulder', title: "Shoulder / Square", desc: "Neck/Upper Back. Strong, wrinkles visible. Most belts are made from here.", color: "bg-blue-500", defaultFill: "fill-blue-500/20", hoverFill: "fill-blue-500/60" },
-                { id: 'crop', title: "Crop Area", desc: "Premium section excluding bellies. High quality yield.", color: "bg-indigo-500", defaultFill: "fill-indigo-500/20", hoverFill: "fill-indigo-500/60" },
-                { id: 'butt', title: "Bend / Butt", desc: "Rear. Thickest, tightest fibers. The absolute premium cut for structural items.", color: "bg-emerald-500", defaultFill: "fill-emerald-500/20", hoverFill: "fill-emerald-500/60" },
-                { id: 'belly', title: "Belly", desc: "Underside. Stretchy, loose fibers. Used for linings or bags.", color: "bg-orange-500", defaultFill: "fill-orange-500/20", hoverFill: "fill-orange-500/60" }
+                { id: 'side', num: '1', title: "Side", desc: "Half of a whole hide divided along the backbone. Best balance of yield.", color: "bg-purple-500", defaultFill: "fill-purple-500/20", hoverFill: "fill-purple-500/60" },
+                { id: 'shoulder', num: '2', title: "Shoulder / Square", desc: "Neck/Upper Back. Strong, wrinkles visible. Most belts are made from here.", color: "bg-blue-500", defaultFill: "fill-blue-500/20", hoverFill: "fill-blue-500/60" },
+                { id: 'crop', num: '3', title: "Crop Area", desc: "Premium section excluding bellies. High quality yield.", color: "bg-indigo-500", defaultFill: "fill-indigo-500/20", hoverFill: "fill-indigo-500/60" },
+                { id: 'butt', num: '4', title: "Bend / Butt", desc: "Rear. Thickest, tightest fibers. The absolute premium cut for structural items.", color: "bg-emerald-500", defaultFill: "fill-emerald-500/20", hoverFill: "fill-emerald-500/60" },
+                { id: 'belly', num: '5', title: "Belly", desc: "Underside. Stretchy, loose fibers. Used for linings or bags.", color: "bg-orange-500", defaultFill: "fill-orange-500/20", hoverFill: "fill-orange-500/60" }
             ];
+
+            const handleToggle = (id) => setActivePart(prev => prev === id ? null : id);
 
             return (
                 <div className="bg-white rounded-3xl p-8 md:p-12 border border-stone-100 shadow-sm flex flex-col md:flex-row items-center gap-12 w-full">
                     <div className="relative w-full max-w-md aspect-square flex items-center justify-center">
-                        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl">
+                        <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-xl" role="img" aria-label="Interactive hide anatomy diagram">
                             <defs>
                                 <clipPath id="hide-clip">
                                     <path d="M50,20 C60,10 80,10 90,20 C95,25 105,25 110,20 C120,10 140,10 150,20 C160,30 180,40 180,70 C180,90 170,100 175,120 C180,140 190,170 160,180 C140,185 130,170 100,175 C70,170 60,185 40,180 C10,170 20,140 25,120 C30,100 20,90 20,70 C20,40 40,30 50,20 Z" />
                                 </clipPath>
                             </defs>
-                            
-                            <path d="M50,20 C60,10 80,10 90,20 C95,25 105,25 110,20 C120,10 140,10 150,20 C160,30 180,40 180,70 C180,90 170,100 175,120 C180,140 190,170 160,180 C140,185 130,170 100,175 C70,170 60,185 40,180 C10,170 20,140 25,120 C30,100 20,90 20,70 C20,40 40,30 50,20 Z" 
+
+                            <path d="M50,20 C60,10 80,10 90,20 C95,25 105,25 110,20 C120,10 140,10 150,20 C160,30 180,40 180,70 C180,90 170,100 175,120 C180,140 190,170 160,180 C140,185 130,170 100,175 C70,170 60,185 40,180 C10,170 20,140 25,120 C30,100 20,90 20,70 C20,40 40,30 50,20 Z"
                                   className="fill-[#F5F0E6] stroke-stone-300 stroke-2" />
-                            
+
                             <g clipPath="url(#hide-clip)">
-                                {/* Belly highlight logic */}
-                                <g className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'belly' || !hoveredPart ? 'opacity-100' : 'opacity-30'}`}
-                                   onMouseEnter={() => setHoveredPart('belly')} onMouseLeave={() => setHoveredPart(null)}>
-                                    <rect x="0" y="0" width="200" height="200" className={hoveredPart === 'belly' ? parts[4].hoverFill : parts[4].defaultFill} />
+                                {/* Belly */}
+                                <g className={`transition-all duration-300 cursor-pointer ${activepart === 'belly' || !activepart ? 'opacity-100' : 'opacity-30'}`}
+                                   onClick={() => handleToggle('belly')} onMouseEnter={() => setActivePart('belly')} onMouseLeave={() => setActivePart(null)}>
+                                    <rect x="0" y="0" width="200" height="200" className={activepart === 'belly' ? parts[4].hoverFill : parts[4].defaultFill} />
                                     <rect x="0" y="0" width="200" height="70" className="fill-[#F5F0E6]" />
                                     <rect x="40" y="70" width="120" height="130" className="fill-[#F5F0E6]" />
                                 </g>
+                                {/* Side */}
+                                <rect x="100" y="0" width="100" height="200" tabIndex={0} role="button" aria-label="Side — half of a whole hide"
+                                      className={`transition-all duration-300 cursor-pointer ${activepart === 'side' ? parts[0].hoverFill : (!activepart ? parts[0].defaultFill : 'fill-transparent')}`}
+                                      onClick={() => handleToggle('side')} onMouseEnter={() => setActivePart('side')} onMouseLeave={() => setActivePart(null)} />
+                                {/* Shoulder */}
+                                <rect x="0" y="0" width="200" height="70" tabIndex={0} role="button" aria-label="Shoulder — neck and upper back area"
+                                      className={`transition-all duration-300 cursor-pointer ${activepart === 'shoulder' ? parts[1].hoverFill : (!activepart ? parts[1].defaultFill : 'fill-transparent')}`}
+                                      onClick={() => handleToggle('shoulder')} onMouseEnter={() => setActivePart('shoulder')} onMouseLeave={() => setActivePart(null)} />
+                                {/* Butt */}
+                                <rect x="40" y="70" width="120" height="130" tabIndex={0} role="button" aria-label="Bend / Butt — thickest, tightest fibers"
+                                      className={`transition-all duration-300 cursor-pointer ${activepart === 'butt' ? parts[3].hoverFill : (!activepart ? parts[3].defaultFill : 'fill-transparent')}`}
+                                      onClick={() => handleToggle('butt')} onMouseEnter={() => setActivePart('butt')} onMouseLeave={() => setActivePart(null)} />
+                                {/* Crop */}
+                                <rect x="100" y="0" width="60" height="200" tabIndex={0} role="button" aria-label="Crop — premium section"
+                                      className={`transition-all duration-300 cursor-pointer ${activepart === 'crop' ? parts[2].hoverFill : (!activepart ? parts[2].defaultFill : 'fill-transparent')}`}
+                                      onClick={() => handleToggle('crop')} onMouseEnter={() => setActivePart('crop')} onMouseLeave={() => setActivePart(null)} />
+                            </g>
 
-                                {/* Side highlight logic */}
-                                <rect x="100" y="0" width="100" height="200" 
-                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'side' ? parts[0].hoverFill : (!hoveredPart ? parts[0].defaultFill : 'fill-transparent')}`}
-                                      onMouseEnter={() => setHoveredPart('side')} onMouseLeave={() => setHoveredPart(null)} />
-
-                                {/* Shoulder highlight logic */}
-                                <rect x="0" y="0" width="200" height="70" 
-                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'shoulder' ? parts[1].hoverFill : (!hoveredPart ? parts[1].defaultFill : 'fill-transparent')}`}
-                                      onMouseEnter={() => setHoveredPart('shoulder')} onMouseLeave={() => setHoveredPart(null)} />
-
-                                {/* Butt highlight logic */}
-                                <rect x="40" y="70" width="120" height="130" 
-                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'butt' ? parts[3].hoverFill : (!hoveredPart ? parts[3].defaultFill : 'fill-transparent')}`}
-                                      onMouseEnter={() => setHoveredPart('butt')} onMouseLeave={() => setHoveredPart(null)} />
-
-                                {/* Crop highlight logic */}
-                                <rect x="100" y="0" width="60" height="200" 
-                                      className={`transition-all duration-300 cursor-pointer ${hoveredPart === 'crop' ? parts[2].hoverFill : (!hoveredPart ? parts[2].defaultFill : 'fill-transparent')}`}
-                                      onMouseEnter={() => setHoveredPart('crop')} onMouseLeave={() => setHoveredPart(null)} />
+                            {/* Region number labels */}
+                            <g clipPath="url(#hide-clip)" className="pointer-events-none">
+                                <text x="155" y="100" textAnchor="middle" className="fill-purple-700" fontSize="11" fontWeight="bold">①</text>
+                                <text x="100" y="38" textAnchor="middle" className="fill-blue-700" fontSize="11" fontWeight="bold">②</text>
+                                <text x="128" y="130" textAnchor="middle" className="fill-indigo-700" fontSize="11" fontWeight="bold">③</text>
+                                <text x="80" y="130" textAnchor="middle" className="fill-emerald-700" fontSize="11" fontWeight="bold">④</text>
+                                <text x="18" y="140" textAnchor="middle" className="fill-orange-700" fontSize="11" fontWeight="bold">⑤</text>
                             </g>
                         </svg>
                     </div>
                     <div className="flex-1 space-y-4">
                         {parts.map((part) => (
-                            <div 
+                            <div
                                 key={part.id}
-                                className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer flex items-start gap-4 ${hoveredPart === part.id ? 'bg-stone-50 border-stone-300 shadow-md scale-[1.02]' : 'bg-transparent border-stone-100 hover:bg-stone-50'}`}
-                                onMouseEnter={() => setHoveredPart(part.id)}
-                                onMouseLeave={() => setHoveredPart(null)}
+                                className={`p-4 rounded-xl border transition-all duration-200 cursor-pointer flex items-start gap-4 ${activepart === part.id ? 'bg-stone-50 border-stone-300 shadow-md scale-[1.02]' : 'bg-transparent border-stone-100 hover:bg-stone-50'}`}
+                                onClick={() => handleToggle(part.id)}
+                                onMouseEnter={() => setActivePart(part.id)}
+                                onMouseLeave={() => setActivePart(null)}
+                                tabIndex={0}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleToggle(part.id); }}
+                                role="button"
+                                aria-pressed={activepart === part.id}
                             >
-                                <div className={`mt-1 w-3 h-3 rounded-full shrink-0 ${part.color}`} />
+                                <div className="flex items-center gap-2 mt-1 shrink-0">
+                                    <span className="text-xs font-bold text-stone-400">{part.num}</span>
+                                    <div className={`w-3 h-3 rounded-full ${part.color}`} />
+                                </div>
                                 <div>
                                     <h4 className="font-bold text-stone-900">{part.title}</h4>
                                     <p className="text-stone-500 text-sm mt-1">{part.desc}</p>
                                 </div>
                             </div>
                         ))}
+                        <p className="text-xs text-stone-400 mt-2 italic">Hover or tap each region to highlight it on the diagram.</p>
                     </div>
                 </div>
             );
         };
 
-        const LeatherModule = () => {
+        /* -------------------------------------------------------------
+           LEATHER MODULE
+           ------------------------------------------------------------- */
+        const LeatherModule = React.memo(() => {
             const [searchTerm, setSearchTerm] = useState('');
-            const filteredGlossary = leatherGlossary.filter(item => 
-                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const filteredGlossary = useMemo(() => leatherGlossary.filter(item =>
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.def.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            ), [searchTerm]);
+
+            const leatherLinks = [
+                { id: 'leather-intro', label: 'What is Leather?' },
+                { id: 'leather-layers', label: 'Hide Layers' },
+                { id: 'leather-grades', label: 'Grades & Types' },
+                { id: 'leather-tanning', label: 'Tanning Methods' },
+                { id: 'leather-finishes', label: 'Finishes' },
+                { id: 'leather-specs', label: 'Manufacturing Specs' },
+                { id: 'leather-anatomy', label: 'Hide Anatomy' },
+                { id: 'leather-care', label: 'Care & Maintenance' },
+                { id: 'leather-glossary', label: 'Glossary' },
+            ];
+
+            const iconMap = { Droplet, Layers, Leaf, Scissors };
 
             return (
                 <div className="space-y-32 animate-in fade-in duration-500">
-                    <section>
+                    <JumpNav links={leatherLinks} />
+
+                    <section id="leather-intro">
                         <SectionHeading subtitle="Leather is a natural, durable material created through the tanning of animal hides.">What is Leather?</SectionHeading>
                         <div className="grid md:grid-cols-2 gap-8">
                             <AssetImage src="images/leather-hero-collage.jpg" alt="Collage" className="h-80" />
@@ -364,7 +525,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="leather-layers">
                         <SectionHeading subtitle="Understanding the layers of the skin and the modern splitting process.">Hide Layers & Splitting</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-6 mb-8">
                             <Card className="bg-[#F9F8F6] border-stone-200">
@@ -382,7 +543,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="leather-grades">
                         <SectionHeading subtitle="Understanding grades is key to quality selection.">Grades & Types</SectionHeading>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {leatherTypes.map((type, idx) => (
@@ -397,13 +558,48 @@
                             {['full-grain', 'top-grain', 'split-suede', 'pu-synthetic'].map(img => (
                                 <div key={img} className="space-y-2 text-center">
                                     <AssetImage src={`images/macro-${img}.jpg`} alt={img} className="h-40" />
-                                    <span className="text-xs text-stone-500 font-bold uppercase">{img.replace('-', ' ')}</span>
+                                    <span className="text-xs text-stone-500 font-bold uppercase">{img.replaceAll('-', ' ')}</span>
                                 </div>
                             ))}
                         </div>
                     </section>
 
-                    <section>
+                    <section id="leather-tanning">
+                        <SectionHeading subtitle="The tanning method determines the leather's character, durability, sustainability, and patina potential.">Tanning Methods</SectionHeading>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {tanningMethods.map((method, idx) => {
+                                const IconComp = iconMap[method.icon] || Layers;
+                                return (
+                                    <Card key={idx} className={`${method.bg} border-none flex flex-col hover:shadow-lg transition-all`}>
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div>
+                                                <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-white/60 w-max ${method.accent}`}>{method.tag}</span>
+                                                <h3 className={`text-2xl font-serif mt-3 ${method.accent}`}>{method.title}</h3>
+                                            </div>
+                                            <IconComp size={24} className={`${method.accent} mt-1 opacity-60 shrink-0`} />
+                                        </div>
+                                        <p className="text-stone-600 text-sm leading-relaxed mb-5">{method.description}</p>
+                                        <div className="grid grid-cols-2 gap-4 mt-auto">
+                                            <div>
+                                                <p className="text-xs font-bold text-stone-500 uppercase mb-2">Advantages</p>
+                                                <ul className="space-y-1">
+                                                    {method.pros.map((pro, i) => <li key={i} className="flex gap-2 text-xs text-stone-600"><CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />{pro}</li>)}
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-stone-500 uppercase mb-2">Limitations</p>
+                                                <ul className="space-y-1">
+                                                    {method.cons.map((con, i) => <li key={i} className="flex gap-2 text-xs text-stone-500"><AlertCircle size={12} className="text-stone-400 shrink-0 mt-0.5" />{con}</li>)}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </section>
+
+                    <section id="leather-finishes">
                         <SectionHeading subtitle="The finish applied dictates a product's breathability, softness, and maintenance needs.">Leather Finishes</SectionHeading>
                         <div className="grid lg:grid-cols-3 gap-6 mb-8">
                             {leatherFinishes.map((finish, idx) => (
@@ -416,7 +612,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="leather-specs">
                         <SectionHeading subtitle="Crucial metrics for production, pricing, and legal stamping.">Manufacturing Specs</SectionHeading>
                         <div className="grid lg:grid-cols-2 gap-8">
                             <div className="space-y-8">
@@ -439,7 +635,7 @@
                                         <p className="text-xs text-stone-400 mt-3">*Add 13% more to cutting yield for stretch PU materials.</p>
                                     </div>
                                 </Card>
-                                
+
                                 <Card className="border-stone-200 bg-[#F0F4F8]">
                                     <div className="flex items-center gap-3 mb-6 text-stone-900">
                                         <Ruler className="text-blue-600" />
@@ -461,7 +657,6 @@
                                     <h3 className="text-2xl font-serif text-white">Stamping Guidelines</h3>
                                 </div>
                                 <p className="text-stone-400 text-sm mb-6">Legal and industry standards for product stamping based on the material layer.</p>
-                                
                                 <div className="space-y-4 flex-1">
                                     {[
                                         { mat: "Top Grain Leather", stamp: "Genuine Leather" },
@@ -481,34 +676,54 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="leather-anatomy">
                         <SectionHeading subtitle="Hide location determines density, stretch, and price.">Hide Anatomy</SectionHeading>
                         <InteractiveHideDiagram />
                     </section>
 
-                    <section>
+                    <section id="leather-care">
+                        <SectionHeading subtitle="Proper care preserves quality, extends life, and enhances the leather's natural character over time.">Care & Maintenance</SectionHeading>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {leatherCare.map((area, idx) => {
+                                const IconComp = iconMap[area.icon] || Droplet;
+                                return (
+                                    <Card key={idx} className={`${area.bg} border-none flex flex-col`}>
+                                        <div className="flex items-center gap-3 mb-5">
+                                            <IconComp size={20} className="text-stone-700 shrink-0" />
+                                            <h3 className="font-serif font-bold text-xl text-stone-900">{area.title}</h3>
+                                        </div>
+                                        <ul className="space-y-3 flex-1">
+                                            {area.tips.map((tip, i) => (
+                                                <li key={i} className="flex gap-2 text-sm text-stone-600 leading-snug">
+                                                    <CheckCircle size={14} className="text-stone-400 shrink-0 mt-0.5" />
+                                                    {tip}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                    </section>
+
+                    <section id="leather-glossary">
                         <SectionHeading subtitle="The complete A-Z industry terminology.">Leather Glossary</SectionHeading>
                         <Card className="bg-white border border-stone-100 shadow-sm">
                             <div className="mb-8 max-w-md relative">
                                 <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
-                                <input 
-                                    type="text" 
-                                    placeholder="Search 80+ terms (e.g., Saffiano, Nappa)..."
+                                <input
+                                    type="text"
+                                    placeholder="Search terms (e.g., Nubuck, Nappa, Vachetta)..."
                                     className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
                                 {filteredGlossary.map((item, idx) => (
                                     <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
-                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
-                                            {item.term}
-                                        </h4>
-                                        <p className="text-stone-500 text-sm leading-relaxed">
-                                            {item.def}
-                                        </p>
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors">{item.term}</h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">{item.def}</p>
                                     </div>
                                 ))}
                                 {filteredGlossary.length === 0 && (
@@ -521,18 +736,33 @@
                     </section>
                 </div>
             );
-        };
+        });
 
-        const BeltModule = () => {
+        /* -------------------------------------------------------------
+           BELT MODULE
+           ------------------------------------------------------------- */
+        const BeltModule = React.memo(() => {
             const [searchTerm, setSearchTerm] = useState('');
-            const filteredGlossary = beltGlossary.filter(item => 
-                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const filteredGlossary = useMemo(() => beltGlossary.filter(item =>
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.def.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            ), [searchTerm]);
+
+            const beltLinks = [
+                { id: 'belt-anatomy', label: 'Anatomy' },
+                { id: 'belt-materials', label: 'Materials & Sizing' },
+                { id: 'belt-construction', label: 'Construction' },
+                { id: 'belt-edges', label: 'Edge Profiles' },
+                { id: 'belt-stitching', label: 'Stitching' },
+                { id: 'belt-buckles', label: 'Buckle Types' },
+                { id: 'belt-glossary', label: 'Glossary' },
+            ];
 
             return (
                 <div className="space-y-32 animate-in fade-in duration-500">
-                    <section>
+                    <JumpNav links={beltLinks} />
+
+                    <section id="belt-anatomy">
                         <SectionHeading subtitle="The essential parts that make up a belt.">Belt Anatomy</SectionHeading>
                         <div className="bg-white rounded-3xl p-8 border border-stone-100 shadow-sm flex flex-col items-center w-full mb-8">
                             <AssetImage src="images/belt-anatomy-large.jpg" alt="Belt Anatomy" className="w-full max-w-5xl h-64 md:h-96 object-contain bg-white mb-8" />
@@ -547,7 +777,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-materials">
                         <SectionHeading subtitle="Belts are crafted from diverse materials suited for different occasions.">Materials & Sizing</SectionHeading>
                         <div className="flex flex-col gap-8">
                             <div className="grid md:grid-cols-3 gap-6">
@@ -564,11 +794,11 @@
                                     <p className="text-sm text-stone-600">Lightweight, versatile, and highly adjustable. Often utilizes stretch elastic, braided, or cotton/nylon webbing.</p>
                                 </Card>
                             </div>
-                            
+
                             <Card className="bg-[#F9F8F6] p-8 md:p-10 border border-stone-200">
                                 <h3 className="font-serif text-3xl text-stone-900 mb-2">Sizing & Fit Specifications</h3>
                                 <p className="text-stone-600 text-sm mb-8 max-w-2xl">A properly fitted belt should fasten comfortably on the center hole. Our standard belts typically feature 5 or 7 holes to accommodate adjustment.</p>
-                                
+
                                 <div className="grid md:grid-cols-3 gap-8">
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
@@ -577,7 +807,6 @@
                                         </div>
                                         <p className="text-sm text-stone-700"><strong>Belt Size = Waist Size + 2 Inches.</strong><br/><br/>If a customer wears a size 34 pant, they should purchase a size 36 belt.</p>
                                     </div>
-
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
                                             <Scale size={20} className="text-stone-700" />
@@ -585,7 +814,6 @@
                                         </div>
                                         <p className="text-sm text-stone-700">Measure from the <strong>Tension Point</strong> (the inside nose of the buckle where the prong rests) to the <strong>Center Hole</strong> (hole #3 on a 5-hole belt, or #4 on a 7-hole belt).</p>
                                     </div>
-
                                     <div className="space-y-4">
                                         <div className="flex items-center gap-3 border-b border-stone-300 pb-2">
                                             <Layers size={20} className="text-stone-700" />
@@ -602,7 +830,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-construction">
                         <SectionHeading>Construction</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-8">
                             <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Rugged, durable.</p><AssetImage src="images/const-single-layer.jpg" className="h-32" /></Card>
@@ -611,7 +839,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-edges">
                         <SectionHeading subtitle="Edge finish defines formality.">Edge Profiles</SectionHeading>
                         <div className="grid md:grid-cols-4 gap-4">
                             {beltEdges.map((edge, i) => (
@@ -623,7 +851,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-stitching">
                         <SectionHeading subtitle="SPI indicates refinement.">Stitching Details</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-6">
                             {beltStitches.map((stitch, i) => (
@@ -639,65 +867,72 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-buckles">
                         <SectionHeading>Buckle Types</SectionHeading>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                             {["Harness", "Center Bar", "Plaque", "Reversible", "Track Lock", "Compression"].map((b, i) => (
                                 <div key={i} className="bg-white p-6 rounded-2xl border border-stone-100 text-center flex flex-col items-center">
-                                    <AssetImage src={`images/buckle-${b.toLowerCase().replace(' ', '-')}.jpg`} className="h-48 w-full object-contain mb-4" />
+                                    <AssetImage src={`images/buckle-${b.toLowerCase().replaceAll(' ', '-')}.jpg`} className="h-48 w-full object-contain mb-4" />
                                     <span className="block mt-3 text-lg font-medium text-stone-900">{b}</span>
                                 </div>
                             ))}
                         </div>
                     </section>
 
-                    <section>
+                    <section id="belt-glossary">
                         <SectionHeading subtitle="Key terminology for belt construction and components.">Belt Glossary</SectionHeading>
                         <Card className="bg-white border border-stone-100 shadow-sm">
                             <div className="mb-8 max-w-md relative">
                                 <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Search belt terms..."
                                     className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
                                 {filteredGlossary.map((item, idx) => (
                                     <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
-                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
-                                            {item.term}
-                                        </h4>
-                                        <p className="text-stone-500 text-sm leading-relaxed">
-                                            {item.def}
-                                        </p>
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors">{item.term}</h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">{item.def}</p>
                                     </div>
                                 ))}
                                 {filteredGlossary.length === 0 && (
-                                    <div className="col-span-full py-12 text-center text-stone-500 italic">
-                                        No terminology found matching "{searchTerm}"
-                                    </div>
+                                    <div className="col-span-full py-12 text-center text-stone-500 italic">No terminology found matching "{searchTerm}"</div>
                                 )}
                             </div>
                         </Card>
                     </section>
                 </div>
             );
-        };
+        });
 
-        const WalletModule = () => {
+        /* -------------------------------------------------------------
+           WALLET MODULE
+           ------------------------------------------------------------- */
+        const WalletModule = React.memo(() => {
             const [searchTerm, setSearchTerm] = useState('');
-            const filteredGlossary = walletGlossary.filter(item => 
-                item.term.toLowerCase().includes(searchTerm.toLowerCase()) || 
+            const filteredGlossary = useMemo(() => walletGlossary.filter(item =>
+                item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.def.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            ), [searchTerm]);
+
+            const walletLinks = [
+                { id: 'wallet-anatomy', label: 'Anatomy' },
+                { id: 'wallet-silhouettes', label: 'Silhouettes' },
+                { id: 'wallet-edges', label: 'Edge Construction' },
+                { id: 'wallet-design', label: 'Design Details' },
+                { id: 'wallet-rfid', label: 'RFID Protection' },
+                { id: 'wallet-glossary', label: 'Glossary' },
+            ];
 
             return (
                 <div className="space-y-32 animate-in fade-in duration-500">
-                    <section>
+                    <JumpNav links={walletLinks} />
+
+                    <section id="wallet-anatomy">
                         <SectionHeading subtitle="Complex construction in a compact package.">Wallet Anatomy</SectionHeading>
                         <div className="grid lg:grid-cols-2 gap-12">
                             <Card className="bg-[#F9F8F6] border-stone-200">
@@ -722,7 +957,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="wallet-silhouettes">
                         <SectionHeading subtitle="The form factor is defined by function, carry preference, and capacity needs.">Silhouette Buckets</SectionHeading>
                         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {walletSilhouettes.map((item, i) => (
@@ -735,7 +970,7 @@
                         </div>
                     </section>
 
-                    <section>
+                    <section id="wallet-edges">
                         <SectionHeading subtitle="How the edges are treated defines the formality and durability of the wallet.">Edge Construction</SectionHeading>
                         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {walletConstruction.map((item, i) => (
@@ -747,77 +982,125 @@
                             ))}
                         </div>
                     </section>
-                    
-                    <section>
+
+                    <section id="wallet-design">
                         <SectionHeading subtitle="Techniques used to elevate the aesthetic and functionality.">Design & Branding Details</SectionHeading>
                         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                <AssetImage src="images/detail-emboss.jpg" alt="Blind Emboss Logo" className="h-32" />
-                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Blind Emboss</p>
-                            </div>
-                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                <AssetImage src="images/detail-perf.jpg" alt="Perforation" className="h-32" />
-                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Perforation (Perf)</p>
-                            </div>
-                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                <AssetImage src="images/detail-hardware.jpg" alt="Metal Hardware" className="h-32" />
-                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Metal Ornament</p>
-                            </div>
-                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                <AssetImage src="images/detail-lining.jpg" alt="Lining Fabric" className="h-32" />
-                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Hidden Lining / RFID</p>
-                            </div>
-                            <div className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                <AssetImage src="images/detail-moneyclip.jpg" alt="Money Clip" className="h-32" />
-                                <p className="text-xs font-bold text-center text-stone-700 uppercase">Money Clip</p>
-                            </div>
+                            {[
+                                { img: "detail-emboss.jpg", label: "Blind Emboss" },
+                                { img: "detail-perf.jpg", label: "Perforation (Perf)" },
+                                { img: "detail-hardware.jpg", label: "Metal Ornament" },
+                                { img: "detail-lining.jpg", label: "Hidden Lining / RFID" },
+                                { img: "detail-moneyclip.jpg", label: "Money Clip" },
+                            ].map((detail, i) => (
+                                <div key={i} className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                    <AssetImage src={`images/${detail.img}`} alt={detail.label} className="h-32" />
+                                    <p className="text-xs font-bold text-center text-stone-700 uppercase">{detail.label}</p>
+                                </div>
+                            ))}
                         </div>
                     </section>
 
-                    <section>
+                    {/* RFID SECTION */}
+                    <section id="wallet-rfid">
+                        <SectionHeading subtitle="Understanding the technology behind contactless card protection — a key selling point for modern wallets.">RFID Protection Explained</SectionHeading>
+                        <div className="bg-stone-900 rounded-3xl p-8 md:p-12 text-white mb-8">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center shrink-0">
+                                    <Shield size={20} className="text-emerald-400" />
+                                </div>
+                                <div>
+                                    <p className="text-xs text-stone-400 uppercase tracking-widest font-bold">Feature Spotlight</p>
+                                    <h3 className="text-2xl font-serif text-white">How RFID Blocking Works</h3>
+                                </div>
+                            </div>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                {rfidInfo.map((item, i) => (
+                                    <div key={i} className="bg-stone-800/60 rounded-2xl p-6">
+                                        <div className="flex items-start gap-3 mb-3">
+                                            <div className="w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center shrink-0 mt-0.5">
+                                                <span className="text-emerald-400 text-xs font-bold">{i + 1}</span>
+                                            </div>
+                                            <h4 className="font-bold text-white text-sm leading-snug">{item.q}</h4>
+                                        </div>
+                                        <p className="text-stone-400 text-sm leading-relaxed pl-9">{item.a}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Quick reference cards */}
+                        <div className="grid md:grid-cols-3 gap-6">
+                            <Card className="bg-[#F5F0E6] border-none">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Wifi size={18} className="text-amber-700" />
+                                    <h4 className="font-bold text-stone-900">Cards That Need Protection</h4>
+                                </div>
+                                <ul className="space-y-2 text-sm text-stone-600">
+                                    {["Contactless credit & debit cards (look for ))).)", "US Passports (issued after 2007)", "Global Entry / NEXUS / SENTRI cards", "Some hotel key cards & transit cards"].map((c, i) => (
+                                        <li key={i} className="flex gap-2"><CheckCircle size={14} className="text-amber-600 shrink-0 mt-0.5" />{c}</li>
+                                    ))}
+                                </ul>
+                            </Card>
+                            <Card className="bg-[#E8F1F2] border-none">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <Shield size={18} className="text-slate-700" />
+                                    <h4 className="font-bold text-stone-900">What the Lining Looks Like</h4>
+                                </div>
+                                <AssetImage src="images/detail-lining.jpg" alt="RFID Lining" className="h-32 mb-3" />
+                                <p className="text-xs text-stone-500">A thin metallic mesh woven into the interior lining — typically aluminum or copper — invisible from the outside.</p>
+                            </Card>
+                            <Card className="bg-[#EFEFEF] border-none">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <CheckCircle size={18} className="text-stone-600" />
+                                    <h4 className="font-bold text-stone-900">Selling Points</h4>
+                                </div>
+                                <ul className="space-y-2 text-sm text-stone-600">
+                                    {["Invisible — no change to look or feel", "No batteries or activation needed", "Blocks scanning without removing cards", "Peace of mind for frequent travelers", "Standard on our premium wallet tier"].map((p, i) => (
+                                        <li key={i} className="flex gap-2"><CheckCircle size={14} className="text-emerald-500 shrink-0 mt-0.5" />{p}</li>
+                                    ))}
+                                </ul>
+                            </Card>
+                        </div>
+                    </section>
+
+                    <section id="wallet-glossary">
                         <SectionHeading subtitle="Key terminology for wallet construction and components.">Wallet Glossary</SectionHeading>
                         <Card className="bg-white border border-stone-100 shadow-sm">
                             <div className="mb-8 max-w-md relative">
                                 <Search className="absolute left-4 top-3.5 text-stone-400" size={20} />
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     placeholder="Search wallet terms..."
                                     className="w-full bg-stone-50 border border-stone-200 rounded-full py-3 pl-12 pr-6 text-stone-900 focus:outline-none focus:border-stone-400 transition-colors"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
                             </div>
-
                             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
                                 {filteredGlossary.map((item, idx) => (
                                     <div key={idx} className="group cursor-default border-b border-stone-100 pb-4">
-                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors flex items-center gap-2">
-                                            {item.term}
-                                        </h4>
-                                        <p className="text-stone-500 text-sm leading-relaxed">
-                                            {item.def}
-                                        </p>
+                                        <h4 className="text-stone-900 font-bold font-serif text-lg mb-1 group-hover:text-amber-700 transition-colors">{item.term}</h4>
+                                        <p className="text-stone-500 text-sm leading-relaxed">{item.def}</p>
                                     </div>
                                 ))}
                                 {filteredGlossary.length === 0 && (
-                                    <div className="col-span-full py-12 text-center text-stone-500 italic">
-                                        No terminology found matching "{searchTerm}"
-                                    </div>
+                                    <div className="col-span-full py-12 text-center text-stone-500 italic">No terminology found matching "{searchTerm}"</div>
                                 )}
                             </div>
                         </Card>
                     </section>
                 </div>
             );
-        };
+        });
 
         /* -------------------------------------------------------------
            MAIN APP
            ------------------------------------------------------------- */
-
         const App = () => {
-            const [activeModule, setActiveModule] = useState('leather'); // 'leather', 'belt', 'wallet'
+            const [activeModule, setActiveModule] = useState('leather');
             const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [isSearchOpen, setIsSearchOpen] = useState(false);
             const [scrolled, setScrolled] = useState(false);
 
             useEffect(() => {
@@ -826,35 +1109,46 @@
                 return () => window.removeEventListener('scroll', handleScroll);
             }, []);
 
-            const renderModule = () => {
-                switch(activeModule) {
-                    case 'leather': return <LeatherModule />;
-                    case 'belt': return <BeltModule />;
-                    case 'wallet': return <WalletModule />;
-                    default: return <LeatherModule />;
-                }
+            // Cmd+K / Ctrl+K opens global search
+            useEffect(() => {
+                const handleKey = (e) => {
+                    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                        e.preventDefault();
+                        setIsSearchOpen(true);
+                    }
+                };
+                window.addEventListener('keydown', handleKey);
+                return () => window.removeEventListener('keydown', handleKey);
+            }, []);
+
+            const switchModule = (mod) => {
+                setActiveModule(mod);
+                setIsMenuOpen(false);
+                window.scrollTo(0, 0);
             };
 
             const getSubtitle = () => {
                 switch(activeModule) {
-                    case 'leather': return "The essential guide to grades, anatomy, yields, and terminology.";
+                    case 'leather': return "The essential guide to grades, anatomy, tanning, yields, and terminology.";
                     case 'belt': return "Construction, hardware, and edge finishing.";
                     case 'wallet': return "Silhouettes, details, and functional design.";
                     default: return "";
                 }
             };
 
+            const handlePrint = () => window.print();
+
             return (
                 <div className="min-h-screen bg-[#FDFCFB]">
-                    
+
                     {/* Ambient Background */}
-                    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+                    <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 no-print">
                         <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-amber-50/50 rounded-full blur-[120px] mix-blend-multiply opacity-70 animate-pulse"></div>
                         <div className="absolute top-[20%] right-[-10%] w-[40vw] h-[40vw] bg-stone-100/50 rounded-full blur-[120px] mix-blend-multiply opacity-60"></div>
                     </div>
 
                     {/* Navigation */}
-                    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-[#FDFCFB]/80 backdrop-blur-xl border-b border-stone-200 py-3' : 'bg-transparent py-6'}`}>
+                    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 no-print ${scrolled ? 'bg-[#FDFCFB]/80 backdrop-blur-xl border-b border-stone-200 py-3' : 'bg-transparent py-6'}`}>
                         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                             <div className="flex items-center gap-4 text-stone-900">
                                 <div className="h-8 w-24 relative flex items-center justify-center">
@@ -866,22 +1160,36 @@
                                     <span className="text-stone-400 font-sans">101</span>
                                 </span>
                             </div>
-                            
-                            {/* Module Switcher (Desktop) */}
-                            <div className="hidden md:flex items-center gap-2 bg-white/50 p-1 rounded-full border border-stone-200 backdrop-blur-sm">
-                                {['leather', 'belt', 'wallet'].map(mod => (
-                                    <button 
-                                        key={mod}
-                                        onClick={() => { setActiveModule(mod); window.scrollTo(0,0); }}
-                                        className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeModule === mod ? 'bg-stone-900 text-white shadow-md' : 'text-stone-500 hover:text-stone-900'}`}
-                                    >
-                                        {mod.charAt(0).toUpperCase() + mod.slice(1)}
-                                    </button>
-                                ))}
+
+                            <div className="hidden md:flex items-center gap-3">
+                                {/* Module Switcher */}
+                                <div className="flex items-center gap-2 bg-white/50 p-1 rounded-full border border-stone-200 backdrop-blur-sm">
+                                    {['leather', 'belt', 'wallet'].map(mod => (
+                                        <button
+                                            key={mod}
+                                            onClick={() => switchModule(mod)}
+                                            className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeModule === mod ? 'bg-stone-900 text-white shadow-md' : 'text-stone-500 hover:text-stone-900'}`}
+                                        >
+                                            {mod.charAt(0).toUpperCase() + mod.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Search Button */}
+                                <button onClick={() => setIsSearchOpen(true)} title="Search all glossaries (⌘K)"
+                                    className="p-2 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all" aria-label="Open global search">
+                                    <Search size={18} />
+                                </button>
+
+                                {/* Print Button */}
+                                <button onClick={handlePrint} title="Print / Export PDF"
+                                    className="p-2 rounded-full text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all" aria-label="Print or export as PDF">
+                                    <Printer size={18} />
+                                </button>
                             </div>
 
                             {/* Mobile Toggle */}
-                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-stone-900">
+                            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-stone-900" aria-label="Toggle menu">
                                 {isMenuOpen ? <X /> : <Menu />}
                             </button>
                         </div>
@@ -889,22 +1197,31 @@
 
                     {/* Mobile Drawer */}
                     {isMenuOpen && (
-                        <div className="fixed inset-0 z-40 bg-[#FDFCFB] pt-24 px-6 md:hidden overflow-y-auto">
+                        <div className="fixed inset-0 z-40 bg-[#FDFCFB] pt-24 px-6 md:hidden overflow-y-auto no-print">
                             <div className="flex flex-col gap-6">
                                 {['leather', 'belt', 'wallet'].map(mod => (
-                                    <button 
+                                    <button
                                         key={mod}
-                                        onClick={() => { setActiveModule(mod); setIsMenuOpen(false); window.scrollTo(0,0); }}
-                                        className="text-2xl font-serif text-left border-b border-stone-100 pb-4 text-stone-900 font-bold"
+                                        onClick={() => switchModule(mod)}
+                                        className={`text-2xl font-serif text-left border-b border-stone-100 pb-4 font-bold transition-colors ${activeModule === mod ? 'text-amber-700' : 'text-stone-900'}`}
                                     >
                                         {mod.charAt(0).toUpperCase() + mod.slice(1)} 101
+                                        {activeModule === mod && <span className="ml-3 text-sm font-sans text-amber-500">— Current</span>}
                                     </button>
                                 ))}
+                                <div className="flex gap-4 pt-2">
+                                    <button onClick={() => { setIsSearchOpen(true); setIsMenuOpen(false); }} className="flex items-center gap-2 text-stone-500 text-sm">
+                                        <Search size={16} /> Search All
+                                    </button>
+                                    <button onClick={handlePrint} className="flex items-center gap-2 text-stone-500 text-sm">
+                                        <Printer size={16} /> Print / PDF
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     )}
 
-                    {/* Hero Section (Dynamic) */}
+                    {/* Hero Section */}
                     <header className="relative pt-40 pb-24 px-6 z-10">
                         <div className="max-w-5xl mx-auto text-center animate-in slide-in-from-bottom-4 duration-700">
                             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-stone-200 text-stone-600 text-xs font-bold uppercase tracking-widest mb-8 shadow-sm">
@@ -923,9 +1240,11 @@
 
                     {/* Main Content */}
                     <main className="max-w-7xl mx-auto px-6 pb-32 relative z-10">
-                        {renderModule()}
+                        {activeModule === 'leather' && <LeatherModule />}
+                        {activeModule === 'belt' && <BeltModule />}
+                        {activeModule === 'wallet' && <WalletModule />}
                     </main>
-                    
+
                     <footer className="py-20 bg-white border-t border-stone-100 mt-20">
                         <div className="max-w-7xl mx-auto px-6 text-center">
                             <div className="flex flex-col items-center justify-center gap-4 mb-8 opacity-60">
@@ -937,12 +1256,30 @@
                             <p className="text-stone-400 text-sm">© 2026 Randa Apparel & Accessories. Internal Use Only.</p>
                         </div>
                     </footer>
+
+                    {/* Back to Top Button */}
+                    {scrolled && (
+                        <button
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            className="fixed bottom-8 right-8 z-50 bg-stone-900 text-white p-3 rounded-full shadow-lg hover:bg-stone-700 transition-all no-print"
+                            aria-label="Back to top"
+                        >
+                            <ArrowUp size={20} />
+                        </button>
+                    )}
+
+                    {/* Global Search Overlay */}
+                    {isSearchOpen && <GlobalSearchOverlay onClose={() => setIsSearchOpen(false)} />}
                 </div>
             );
         };
 
         const root = createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(
+            <ErrorBoundary>
+                <App />
+            </ErrorBoundary>
+        );
     </script>
 </body>
 </html>
