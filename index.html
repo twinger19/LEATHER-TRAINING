@@ -186,10 +186,9 @@
         ];
 
         const tanningMethods = [
-            { title: "Chrome Tanning", tag: "~80% of Global Production", bg: "bg-[#E8F1F2]", accent: "text-slate-800", icon: "Droplet", description: "Uses chromium sulfate salts in a fast 1–2 day process. Produces soft, pliable, water-resistant leather in a wide color range. The industry standard for most consumer goods, garments, and accessories.", pros: ["Soft & supple immediately", "Consistent & uniform results", "Water & heat resistant", "Broad color range"], cons: ["Chromium waste requires management", "No patina development", "Less eco-friendly"] },
-            { title: "Vegetable Tanning", tag: "Traditional & Sustainable", bg: "bg-[#F5F0E6]", accent: "text-amber-900", icon: "Leaf", description: "Uses plant-based tannins from oak, chestnut, and mimosa bark. A slow process (weeks to months) producing firm, natural-colored leather that develops a rich, unique patina. The gold standard for structured belts and heirloom goods.", pros: ["Develops a rich patina", "Biodegradable & eco-friendly", "Firms and improves with age", "Natural, breathable feel"], cons: ["Expensive & time-consuming", "Less water-resistant initially", "Limited color options"] },
-            { title: "Combination / Re-tanning", tag: "Hybrid", bg: "bg-[#EFEFEF]", accent: "text-stone-600", icon: "Layers", description: "Starts with chrome tanning for softness and stability, then re-tanned with vegetable agents for body and firmness. Balances the best of both methods. Commonly used in premium structured belts.", pros: ["Best of both methods", "Good structure with softness", "More versatile than pure veg-tan"], cons: ["More complex process", "Higher cost than chrome-only"] },
-            { title: "Aldehyde Tanning", tag: "Specialty", bg: "bg-[#F0EBE5]", accent: "text-stone-500", icon: "CircleDashed", description: "Uses glutaraldehyde or oxazolidine compounds. Produces extremely soft, washable, chrome-free leather. Often used for chamois, automotive interiors, and sensitive-skin applications.", pros: ["Machine washable", "Chrome-free option", "Extremely soft hand"], cons: ["Not ideal for structured goods", "Niche applications only"] },
+            { title: "Chrome Tanning", tag: "~80% of Global Production", bg: "bg-[#E8F1F2]", accent: "text-slate-800", icon: "Droplet", img: "tanning-chrome.jpg", description: "Uses chromium sulfate salts in a fast 1–2 day process. Produces soft, pliable, water-resistant leather in a wide color range. The industry standard for most consumer goods, garments, and accessories.", pros: ["Soft & supple immediately", "Consistent & uniform results", "Water & heat resistant", "Broad color range"], cons: ["Chromium waste requires management", "No patina development", "Less eco-friendly"] },
+            { title: "Vegetable Tanning", tag: "Traditional & Sustainable", bg: "bg-[#F5F0E6]", accent: "text-amber-900", icon: "Leaf", img: "tanning-vegetable.jpg", description: "Uses plant-based tannins from oak, chestnut, and mimosa bark. A slow process (weeks to months) producing firm, natural-colored leather that develops a rich, unique patina. The gold standard for structured belts and heirloom goods.", pros: ["Develops a rich patina", "Biodegradable & eco-friendly", "Firms and improves with age", "Natural, breathable feel"], cons: ["Expensive & time-consuming", "Less water-resistant initially", "Limited color options"] },
+            { title: "Combination / Re-tanning", tag: "Hybrid", bg: "bg-[#EFEFEF]", accent: "text-stone-600", icon: "Layers", img: "tanning-combination.jpg", description: "Starts with chrome tanning for softness and stability, then re-tanned with vegetable agents for body and firmness. Balances the best of both methods. Commonly used in premium structured belts.", pros: ["Best of both methods", "Good structure with softness", "More versatile than pure veg-tan"], cons: ["More complex process", "Higher cost than chrome-only"] },
         ];
 
         const leatherFinishes = [
@@ -582,34 +581,45 @@
 
                     <section id="leather-tanning">
                         <SectionHeading subtitle="The tanning method determines the leather's character, durability, sustainability, and patina potential.">Tanning Methods</SectionHeading>
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="flex flex-col gap-6">
                             {tanningMethods.map((method, idx) => {
                                 const IconComp = iconMap[method.icon] || Layers;
                                 return (
-                                    <Card key={idx} className={`${method.bg} border-none flex flex-col hover:shadow-lg transition-all`}>
-                                        <div className="flex items-start justify-between mb-4">
-                                            <div>
-                                                <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-white/60 w-max ${method.accent}`}>{method.tag}</span>
-                                                <h3 className={`text-2xl font-serif mt-3 ${method.accent}`}>{method.title}</h3>
-                                            </div>
-                                            <IconComp size={24} className={`${method.accent} mt-1 opacity-60 shrink-0`} />
+                                    <div key={idx} className={`${method.bg} rounded-3xl overflow-hidden flex flex-col md:flex-row hover:shadow-lg transition-all`}>
+                                        {/* Image slot */}
+                                        <div className="md:w-64 lg:w-80 shrink-0">
+                                            <AssetImage
+                                                src={`images/${method.img}`}
+                                                alt={method.title}
+                                                className="h-56 md:h-full rounded-none"
+                                            />
                                         </div>
-                                        <p className="text-stone-600 text-sm leading-relaxed mb-5">{method.description}</p>
-                                        <div className="grid grid-cols-2 gap-4 mt-auto">
-                                            <div>
-                                                <p className="text-xs font-bold text-stone-500 uppercase mb-2">Advantages</p>
-                                                <ul className="space-y-1">
-                                                    {method.pros.map((pro, i) => <li key={i} className="flex gap-2 text-xs text-stone-600"><CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />{pro}</li>)}
-                                                </ul>
+                                        {/* Info */}
+                                        <div className="flex flex-col flex-1 p-8">
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div>
+                                                    <span className={`text-xs font-bold uppercase px-3 py-1 rounded-full bg-white/60 w-max ${method.accent}`}>{method.tag}</span>
+                                                    <h3 className={`text-2xl font-serif mt-3 ${method.accent}`}>{method.title}</h3>
+                                                </div>
+                                                <IconComp size={24} className={`${method.accent} mt-1 opacity-60 shrink-0`} />
                                             </div>
-                                            <div>
-                                                <p className="text-xs font-bold text-stone-500 uppercase mb-2">Limitations</p>
-                                                <ul className="space-y-1">
-                                                    {method.cons.map((con, i) => <li key={i} className="flex gap-2 text-xs text-stone-500"><AlertCircle size={12} className="text-stone-400 shrink-0 mt-0.5" />{con}</li>)}
-                                                </ul>
+                                            <p className="text-stone-600 text-sm leading-relaxed mb-5">{method.description}</p>
+                                            <div className="grid grid-cols-2 gap-4 mt-auto">
+                                                <div>
+                                                    <p className="text-xs font-bold text-stone-500 uppercase mb-2">Advantages</p>
+                                                    <ul className="space-y-1">
+                                                        {method.pros.map((pro, i) => <li key={i} className="flex gap-2 text-xs text-stone-600"><CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />{pro}</li>)}
+                                                    </ul>
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold text-stone-500 uppercase mb-2">Limitations</p>
+                                                    <ul className="space-y-1">
+                                                        {method.cons.map((con, i) => <li key={i} className="flex gap-2 text-xs text-stone-500"><AlertCircle size={12} className="text-stone-400 shrink-0 mt-0.5" />{con}</li>)}
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </div>
-                                    </Card>
+                                    </div>
                                 );
                             })}
                         </div>
