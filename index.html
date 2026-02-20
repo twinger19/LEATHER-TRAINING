@@ -47,7 +47,7 @@
             Menu, X, Layers, Droplet, Leaf, Scissors, ZoomIn, CheckCircle,
             AlertCircle, Search, ArrowUpRight, Ruler, Globe, Tag, Image as ImageIcon,
             CreditCard, CircleDashed, Layout, PenTool, Scale, Stamp,
-            ArrowUp, Shield, Printer, Wifi
+            ArrowUp, Shield, Printer, Wifi, Award
         } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0';
 
         /* -------------------------------------------------------------
@@ -202,6 +202,29 @@
             { title: "Cleaning", icon: "Scissors", bg: "bg-[#E8F1F2]", tips: ["Wipe lightly soiled areas with a barely damp cloth", "Use a pH-balanced leather cleaner for stains", "Never soak or saturate leather with water", "Always test any product on a hidden area first"] },
             { title: "Storage", icon: "Layers", bg: "bg-[#EFEFEF]", tips: ["Store in a cool, dry space away from direct sunlight", "Stuff bags and wallets with tissue to hold shape", "Use breathable dust bags — never airtight plastic", "Avoid storing belts tightly rolled for extended periods"] },
             { title: "Patina & Aging", icon: "Leaf", bg: "bg-[#F0EBE5]", tips: ["On full-grain & veg-tan leather, patina is a feature, not a flaw", "Light buffing with a dry cloth brings out natural luster", "Minor surface scratches on full-grain can often be buffed out", "Aniline leather will darken beautifully with oils and handling"] },
+        ];
+
+        const lwgRatings = [
+            { tier: "Gold", score: "85%+", bg: "bg-amber-50", border: "border-amber-200", accent: "text-amber-800", badgeBg: "bg-amber-400", desc: "The highest achievable rating. Awarded to tanneries demonstrating best-in-class environmental management, full traceability, and consistent compliance across every audit category. Recognized globally as the benchmark for responsible leather sourcing." },
+            { tier: "Silver", score: "72–84%", bg: "bg-slate-50", border: "border-slate-200", accent: "text-slate-700", badgeBg: "bg-slate-400", desc: "Strong environmental performance with robust processes in place. Minor gaps remain but the tannery demonstrates a clear commitment to responsible practices and a credible path toward Gold." },
+            { tier: "Bronze", score: "56–71%", bg: "bg-orange-50", border: "border-orange-200", accent: "text-orange-800", badgeBg: "bg-orange-400", desc: "Entry-level certification. The tannery meets baseline environmental standards and has committed to the LWG framework, with meaningful room to improve across audit categories." },
+            { tier: "Audited", score: "< 56%", bg: "bg-stone-50", border: "border-stone-200", accent: "text-stone-500", badgeBg: "bg-stone-300", desc: "Completed the LWG audit but did not achieve a scored rating. Indicates transparency and engagement with the framework — a starting point for improvement, not a disqualification." },
+        ];
+
+        const lwgCriteria = [
+            { title: "Environmental Compliance", icon: "Scale", detail: "Wastewater treatment, effluent quality, air emissions, and noise pollution must meet or exceed local and international regulatory standards." },
+            { title: "Water Management", icon: "Droplet", detail: "Water consumption is measured and benchmarked throughout the tanning process. Tanneries must demonstrate reduction strategies against industry norms." },
+            { title: "Energy & Carbon Footprint", icon: "Leaf", detail: "Energy use is tracked and tanneries are encouraged to adopt renewables and document greenhouse gas reduction efforts." },
+            { title: "Chemical Management", icon: "Shield", detail: "Strict controls on restricted substances. All chemicals must be documented and harmful substances (azo dyes, heavy metals, formaldehyde) eliminated or minimized." },
+            { title: "Waste Management", icon: "Layers", detail: "Solid waste — trimmings, sludge, packaging — must be tracked, reduced, and disposed of responsibly. Recycling and upcycling initiatives improve the score." },
+            { title: "Traceability", icon: "Globe", detail: "The supply chain from livestock to finished leather must be fully documented. Tanneries must verify and disclose the source of every hide used in production." },
+        ];
+
+        const lwgWhy = [
+            { title: "Brand Requirements", detail: "Major brands including Nike, Adidas, H&M, Timberland, and PVH Corp. require LWG-certified leather from their suppliers. Certification opens the door to these partnerships." },
+            { title: "Consumer Demand", detail: "Today's buyers actively seek sustainably sourced products. LWG certification provides third-party verified proof of responsible sourcing that resonates with modern shoppers." },
+            { title: "ESG & Regulatory Pressure", detail: "Companies face growing pressure from investors and regulators to demonstrate environmental responsibility throughout their supply chains. LWG data directly supports ESG reporting." },
+            { title: "Supply Chain Confidence", detail: "Traceability requirements give brands and designers confidence that the leather they source meets ethical and environmental standards from hide to finished good." },
         ];
 
         const leatherGlossary = [
@@ -503,10 +526,11 @@
                 { id: 'leather-specs', label: 'Manufacturing Specs' },
                 { id: 'leather-anatomy', label: 'Hide Anatomy' },
                 { id: 'leather-care', label: 'Care & Maintenance' },
+                { id: 'leather-lwg', label: 'LWG Certification' },
                 { id: 'leather-glossary', label: 'Glossary' },
             ];
 
-            const iconMap = { Droplet, Layers, Leaf, Scissors };
+            const iconMap = { Droplet, Layers, Leaf, Scissors, Scale, Globe, Shield };
 
             return (
                 <div className="space-y-32 animate-in fade-in duration-500">
@@ -729,6 +753,72 @@
                                     </Card>
                                 );
                             })}
+                        </div>
+                    </section>
+
+                    <section id="leather-lwg">
+                        <SectionHeading subtitle="The Leather Working Group (LWG) is the global gold standard for responsible leather manufacturing — auditing tanneries on environmental performance, traceability, and chemical management.">LWG Certification</SectionHeading>
+
+                        {/* Intro banner */}
+                        <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 mb-8 flex flex-col md:flex-row gap-6 items-start">
+                            <div className="shrink-0 w-28 flex items-center justify-center">
+                                <AssetImage
+                                    src="images/lwg-logo.png"
+                                    alt="Leather Working Group Logo"
+                                    className="h-20 w-full object-contain"
+                                />
+                            </div>
+                            <div>
+                                <h3 className="font-serif font-bold text-xl text-stone-900 mb-2">What is the Leather Working Group?</h3>
+                                <p className="text-sm text-stone-600 leading-relaxed">Founded in 2005, the LWG is a non-profit multi-stakeholder organization that develops and maintains a sustainability assessment protocol for the leather industry. Major brands like Randa, Nike, H&M, and Timberland require LWG-certified leather from their suppliers. Tanneries are audited by independent third parties against a 600+ point scorecard covering environmental impact, traceability, and chemical compliance.</p>
+                            </div>
+                        </div>
+
+                        {/* Rating Tiers */}
+                        <h3 className="font-serif font-bold text-2xl text-stone-900 mb-5">Rating Tiers</h3>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+                            {lwgRatings.map((r, idx) => (
+                                <div key={idx} className={`${r.bg} border ${r.border} rounded-3xl p-6 flex flex-col gap-3`}>
+                                    <div className="flex items-center justify-between">
+                                        <span className={`text-xs font-bold uppercase tracking-widest ${r.accent}`}>{r.tier}</span>
+                                        <span className={`${r.badgeBg} text-white text-xs font-bold px-3 py-1 rounded-full`}>{r.score}</span>
+                                    </div>
+                                    <p className="text-sm text-stone-600 leading-relaxed flex-1">{r.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Audit Criteria */}
+                        <h3 className="font-serif font-bold text-2xl text-stone-900 mb-5">What the Audit Covers</h3>
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+                            {lwgCriteria.map((c, idx) => {
+                                const IconComp = iconMap[c.icon] || Scale;
+                                return (
+                                    <Card key={idx} className="bg-white border border-stone-100 shadow-sm flex flex-col gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-xl bg-stone-100 flex items-center justify-center shrink-0">
+                                                <IconComp size={18} className="text-stone-700" />
+                                            </div>
+                                            <h4 className="font-serif font-bold text-base text-stone-900">{c.title}</h4>
+                                        </div>
+                                        <p className="text-sm text-stone-600 leading-relaxed">{c.detail}</p>
+                                    </Card>
+                                );
+                            })}
+                        </div>
+
+                        {/* Why It Matters */}
+                        <h3 className="font-serif font-bold text-2xl text-stone-900 mb-5">Why LWG Matters to Us</h3>
+                        <div className="grid md:grid-cols-2 gap-5">
+                            {lwgWhy.map((w, idx) => (
+                                <div key={idx} className="bg-stone-50 border border-stone-100 rounded-3xl p-6 flex gap-4">
+                                    <CheckCircle size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                                    <div>
+                                        <h4 className="font-serif font-bold text-base text-stone-900 mb-1">{w.title}</h4>
+                                        <p className="text-sm text-stone-600 leading-relaxed">{w.detail}</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </section>
 
