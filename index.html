@@ -520,6 +520,7 @@
             const leatherLinks = [
                 { id: 'leather-intro', label: 'What is Leather?' },
                 { id: 'leather-layers', label: 'Hide Layers' },
+                { id: 'leather-processing', label: 'Processing Journey' },
                 { id: 'leather-grades', label: 'Grades & Types' },
                 { id: 'leather-tanning', label: 'Tanning Methods' },
                 { id: 'leather-finishes', label: 'Finishes' },
@@ -578,6 +579,205 @@
                                 <p className="text-xs text-stone-500 leading-relaxed">
                                     <strong className="text-stone-700">Layer Diagram:</strong> A cross-section of a hide showing how the Grain, Corium, and Flesh layers relate to finished leather grades — Full-Grain retains the entire grain layer intact; Top-Grain is buffed and corrected; Suede is produced from the split inner surface of the Corium.
                                 </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="leather-processing">
+                        <SectionHeading subtitle="Every piece of leather travels through a precise sequence of chemical and mechanical transformations — from a fresh animal hide to a finished, beautiful material.">
+                            From Raw Hide to Finished Leather
+                        </SectionHeading>
+
+                        {/* Phase overview cards */}
+                        <div className="grid sm:grid-cols-3 gap-4 mb-16">
+                            {[
+                                { num: "Steps 01–05", phase: "Beamhouse", desc: "Hair removal, cleaning & splitting", bg: "bg-[#E8F1F2]", text: "text-slate-700", border: "border-slate-200" },
+                                { num: "Steps 06–08", phase: "Tanning", desc: "Core fiber stabilization", bg: "bg-[#F5F0E6]", text: "text-amber-800", border: "border-amber-200" },
+                                { num: "Steps 09–14", phase: "Post-Tanning & Finishing", desc: "Dyeing, softening & surface work", bg: "bg-emerald-50", text: "text-emerald-800", border: "border-emerald-200" },
+                            ].map((p, i) => (
+                                <div key={i} className={`${p.bg} rounded-3xl p-6 border ${p.border}`}>
+                                    <p className={`text-xs font-bold uppercase tracking-wider ${p.text} mb-2`}>{p.num}</p>
+                                    <h4 className={`text-xl font-serif ${p.text} mb-1`}>{p.phase}</h4>
+                                    <p className="text-xs text-stone-500">{p.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Phase 1: Beamhouse */}
+                        <div className="mb-16">
+                            <div className="flex items-center gap-4 mb-8">
+                                <span className="text-xs font-bold uppercase px-4 py-2 rounded-full bg-[#E8F1F2] text-slate-700 whitespace-nowrap">Phase 1 — Beamhouse</span>
+                                <div className="flex-1 h-px bg-stone-200"></div>
+                                <span className="text-xs text-stone-400 whitespace-nowrap">Steps 01–05</span>
+                            </div>
+                            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                {[
+                                    {
+                                        num: "01", title: "Curing",
+                                        desc: "Hides are packed in salt immediately after slaughter to halt bacterial decay during transit to the tannery.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-slate-600"><rect x="12" y="18" width="32" height="28" rx="6" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.5"/><path d="M20 18 C20 11 36 11 36 18" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round"/><circle cx="22" cy="28" r="2.5" fill="currentColor" fillOpacity="0.5"/><circle cx="28" cy="25" r="2.5" fill="currentColor" fillOpacity="0.5"/><circle cx="34" cy="28" r="2.5" fill="currentColor" fillOpacity="0.5"/><circle cx="25" cy="35" r="2.5" fill="currentColor" fillOpacity="0.5"/><circle cx="31" cy="36" r="2.5" fill="currentColor" fillOpacity="0.5"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                    {
+                                        num: "02", title: "Soaking",
+                                        desc: "Cured hides are submerged in fresh water baths to rehydrate and clean them, restoring their natural suppleness.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-blue-500"><rect x="8" y="30" width="40" height="18" rx="5" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.5"/><path d="M10 38 Q19 33 28 38 Q37 43 46 38" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none"/><rect x="21" y="10" width="14" height="22" rx="3" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.5"/></svg>),
+                                        bg: "bg-blue-50"
+                                    },
+                                    {
+                                        num: "03", title: "Liming",
+                                        desc: "A lime solution removes hair and swells the hide's fiber structure, preparing it to fully accept tanning agents.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-slate-500"><rect x="14" y="10" width="28" height="36" rx="6" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1.5"/><circle cx="22" cy="26" r="3.5" fill="currentColor" fillOpacity="0.35"/><circle cx="28" cy="21" r="3" fill="currentColor" fillOpacity="0.3"/><circle cx="34" cy="27" r="3.5" fill="currentColor" fillOpacity="0.35"/><circle cx="25" cy="33" r="3" fill="currentColor" fillOpacity="0.3"/><circle cx="31" cy="36" r="3.5" fill="currentColor" fillOpacity="0.3"/><path d="M14 19 Q28 15 42 19" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" strokeDasharray="2 2"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                    {
+                                        num: "04", title: "Fleshing",
+                                        desc: "Mechanical rollers scrape fat, muscle, and connective tissue from the flesh side to create a clean, uniform surface.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-slate-600"><circle cx="16" cy="28" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="40" cy="28" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="16" cy="28" r="3" fill="currentColor" fillOpacity="0.25"/><circle cx="40" cy="28" r="3" fill="currentColor" fillOpacity="0.25"/><rect x="6" y="23" width="44" height="10" rx="2" fill="currentColor" fillOpacity="0.08"/><path d="M26 19 L30 19 L32 28 L24 28 Z" fill="currentColor" fillOpacity="0.4"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                    {
+                                        num: "05", title: "Splitting",
+                                        desc: "A band knife machine slices the hide into the tight grain layer (top) and the looser split layer (bottom).",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-amber-700"><rect x="6" y="12" width="44" height="12" rx="3" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.5"/><path d="M4 30 L52 30" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeDasharray="3 2"/><rect x="6" y="33" width="44" height="11" rx="3" fill="currentColor" fillOpacity="0.15" stroke="currentColor" strokeWidth="1.5"/><path d="M44 27 L50 30 L44 33" fill="currentColor" fillOpacity="0.6"/></svg>),
+                                        bg: "bg-amber-50"
+                                    },
+                                ].map((step, i, arr) => (
+                                    <div key={i} className="relative">
+                                        <div className={`${step.bg} rounded-2xl p-5 h-full flex flex-col border border-stone-100 hover:shadow-md transition-all`}>
+                                            <div className="flex items-start justify-between mb-4">
+                                                <span className="text-xs font-bold font-mono text-stone-400">{step.num}</span>
+                                                {step.icon}
+                                            </div>
+                                            <h4 className="font-serif font-bold text-stone-900 mb-2 text-base">{step.title}</h4>
+                                            <p className="text-xs text-stone-500 leading-relaxed flex-1">{step.desc}</p>
+                                        </div>
+                                        {i < arr.length - 1 && (
+                                            <div className="hidden lg:flex absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-stone-200 items-center justify-center z-10 text-stone-400 text-xs">›</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Phase 2: Tanning */}
+                        <div className="mb-16">
+                            <div className="flex items-center gap-4 mb-8">
+                                <span className="text-xs font-bold uppercase px-4 py-2 rounded-full bg-[#F5F0E6] text-amber-800 whitespace-nowrap">Phase 2 — Tanning</span>
+                                <div className="flex-1 h-px bg-stone-200"></div>
+                                <span className="text-xs text-stone-400 whitespace-nowrap">Steps 06–08</span>
+                            </div>
+                            <div className="grid sm:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        num: "06", title: "Pickling",
+                                        desc: "Hides are treated in a salt and acid bath to lower the pH and prepare the fiber structure to bond with tanning agents.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-amber-700"><path d="M18 10 L38 10 L42 46 Q40 50 28 50 Q16 50 14 46 Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.5"/><rect x="14" y="8" width="28" height="5" rx="2.5" fill="currentColor" fillOpacity="0.3"/><path d="M17 28 Q28 24 39 28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/><path d="M16 36 Q28 32 40 36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>),
+                                        bg: "bg-[#F5F0E6]"
+                                    },
+                                    {
+                                        num: "07", title: "Tanning",
+                                        desc: "Hides rotate in large drums with tanning agents — chromium salts (1–2 days) or vegetable tannins (weeks to months) — permanently stabilizing the collagen fibers.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-amber-800"><circle cx="28" cy="28" r="18" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="2"/><circle cx="28" cy="28" r="5" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.5"/><path d="M28 10 L28 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M28 38 L28 46" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M10 28 L18 28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M38 28 L46 28" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M14.7 14.7 L20.5 20.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M35.5 35.5 L41.3 41.3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>),
+                                        bg: "bg-amber-50"
+                                    },
+                                    {
+                                        num: "08", title: "Basification",
+                                        desc: "For chrome-tanned leather, the pH is raised to fix chrome molecules permanently within the collagen, producing 'wet blue' — a tanned but unfinished hide.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-amber-700"><rect x="10" y="32" width="36" height="16" rx="4" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.5"/><path d="M28 28 L28 10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><path d="M22 16 L28 8 L34 16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M18 36 L22 44 M26 36 L26 44 M34 36 L30 44 M42 36 L38 44" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.4"/></svg>),
+                                        bg: "bg-[#F5F0E6]"
+                                    },
+                                ].map((step, i, arr) => (
+                                    <div key={i} className="relative">
+                                        <div className={`${step.bg} rounded-2xl p-6 h-full flex flex-col border border-stone-100 hover:shadow-md transition-all`}>
+                                            <div className="flex items-start justify-between mb-4">
+                                                <span className="text-xs font-bold font-mono text-stone-400">{step.num}</span>
+                                                {step.icon}
+                                            </div>
+                                            <h4 className="font-serif font-bold text-stone-900 mb-2 text-base">{step.title}</h4>
+                                            <p className="text-xs text-stone-500 leading-relaxed flex-1">{step.desc}</p>
+                                        </div>
+                                        {i < arr.length - 1 && (
+                                            <div className="hidden sm:flex absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-stone-200 items-center justify-center z-10 text-stone-400 text-xs">›</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Phase 3: Post-Tanning & Finishing */}
+                        <div className="mb-12">
+                            <div className="flex items-center gap-4 mb-8">
+                                <span className="text-xs font-bold uppercase px-4 py-2 rounded-full bg-emerald-100 text-emerald-800 whitespace-nowrap">Phase 3 — Post-Tanning &amp; Finishing</span>
+                                <div className="flex-1 h-px bg-stone-200"></div>
+                                <span className="text-xs text-stone-400 whitespace-nowrap">Steps 09–14</span>
+                            </div>
+                            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                {[
+                                    {
+                                        num: "09", title: "Retanning & Dyeing",
+                                        desc: "Additional tanning agents build body and character. Aniline, semi-aniline, or pigment dyes are driven into the fibers for consistent color, from natural tans to deep black.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-700"><circle cx="28" cy="30" r="16" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeWidth="1.5"/><circle cx="22" cy="25" r="5.5" fill="#7C3AED" fillOpacity="0.3"/><circle cx="34" cy="25" r="5.5" fill="#D97706" fillOpacity="0.3"/><circle cx="28" cy="35" r="5.5" fill="#047857" fillOpacity="0.35"/><path d="M28 8 L28 14" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/></svg>),
+                                        bg: "bg-emerald-50"
+                                    },
+                                    {
+                                        num: "10", title: "Fat Liquoring",
+                                        desc: "Oils are emulsified and beaten into the leather to lubricate individual collagen fibers, preventing them from sticking together and directly setting the final softness.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-700"><path d="M28 8 C28 8 16 22 16 32 C16 39.7 21.4 46 28 46 C34.6 46 40 39.7 40 32 C40 22 28 8 28 8Z" fill="currentColor" fillOpacity="0.2" stroke="currentColor" strokeWidth="1.5"/><path d="M22 36 Q25 32 28 36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                    {
+                                        num: "11", title: "Drying",
+                                        desc: "Leather is dried using vacuum plates, hanging frames, or toggle drying (stretched on frames). This sets the fiber structure and surface character.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-600"><rect x="12" y="22" width="32" height="22" rx="5" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeWidth="1.5"/><path d="M20 8 Q22 13 20 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M28 6 Q30 12 28 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M36 8 Q38 13 36 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M14 36 Q20 30 28 35 Q36 40 42 36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" strokeDasharray="2 2"/></svg>),
+                                        bg: "bg-emerald-50"
+                                    },
+                                    {
+                                        num: "12", title: "Staking & Milling",
+                                        desc: "Mechanical rollers (staking) or tumbling drums (milling) physically work the leather to achieve the desired softness, drape, and hand feel.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-700"><circle cx="16" cy="28" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="40" cy="28" r="10" fill="none" stroke="currentColor" strokeWidth="2"/><circle cx="16" cy="28" r="3" fill="currentColor" fillOpacity="0.3"/><circle cx="40" cy="28" r="3" fill="currentColor" fillOpacity="0.3"/><path d="M6 23 L8 23 M6 28 L8 28 M6 33 L8 33" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M48 23 L50 23 M48 28 L50 28 M48 33 L50 33" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><path d="M26 28 L30 28" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeDasharray="1 1"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                    {
+                                        num: "13", title: "Finishing",
+                                        desc: "Surface coatings, pigments, lacquers, or waxes are applied. Embossing creates textures. This sets the final appearance, handle, and performance of the leather.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-700"><rect x="10" y="36" width="36" height="10" rx="3" fill="currentColor" fillOpacity="0.25" stroke="currentColor" strokeWidth="1.5"/><path d="M25 12 L31 12 L31 36 L25 36 Z" fill="currentColor" fillOpacity="0.3" stroke="currentColor" strokeWidth="1.5"/><path d="M21 8 L35 8 L31 14 L25 14 Z" fill="currentColor" fillOpacity="0.5"/><path d="M14 36 Q22 28 28 34 Q34 40 42 36" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/></svg>),
+                                        bg: "bg-emerald-50"
+                                    },
+                                    {
+                                        num: "14", title: "Grading & Measuring",
+                                        desc: "Finished hides are inspected, graded by quality, measured by square foot, and stamped. They are now ready to be shipped to manufacturers.",
+                                        icon: (<svg viewBox="0 0 56 56" fill="none" className="w-10 h-10 text-emerald-800"><rect x="10" y="10" width="36" height="36" rx="5" fill="currentColor" fillOpacity="0.1" stroke="currentColor" strokeWidth="1.5"/><path d="M19 28 L25 34 L37 21" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/><path d="M10 18 L7 18 M10 28 L7 28 M10 38 L7 38" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>),
+                                        bg: "bg-stone-50"
+                                    },
+                                ].map((step, i, arr) => (
+                                    <div key={i} className="relative">
+                                        <div className={`${step.bg} rounded-2xl p-6 h-full flex flex-col border border-stone-100 hover:shadow-md transition-all`}>
+                                            <div className="flex items-start justify-between mb-4">
+                                                <span className="text-xs font-bold font-mono text-stone-400">{step.num}</span>
+                                                {step.icon}
+                                            </div>
+                                            <h4 className="font-serif font-bold text-stone-900 mb-2 text-base">{step.title}</h4>
+                                            <p className="text-xs text-stone-500 leading-relaxed flex-1">{step.desc}</p>
+                                        </div>
+                                        {i < arr.length - 1 && (
+                                            <div className="hidden md:flex absolute -right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 bg-white rounded-full border border-stone-200 items-center justify-center z-10 text-stone-400 text-xs">›</div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Summary callout */}
+                        <div className="bg-stone-50 rounded-3xl p-8 border border-stone-100">
+                            <div className="flex items-start gap-4">
+                                <div className="w-10 h-10 rounded-full bg-stone-200 flex items-center justify-center shrink-0">
+                                    <Layers size={18} className="text-stone-600" />
+                                </div>
+                                <div>
+                                    <h4 className="font-serif font-bold text-stone-900 mb-2">The Full Journey: ~2 Days to 3 Months</h4>
+                                    <p className="text-sm text-stone-600 leading-relaxed">Total processing time depends on the tanning method. Chrome-tanned leather can move from raw hide to finished product in as little as 2–3 days. Vegetable-tanned leather — especially for premium structured belts — may spend weeks or months in the tanning pits before post-tanning begins. Each method produces fundamentally different materials with distinct qualities suited to different end uses.</p>
+                                </div>
                             </div>
                         </div>
                     </section>
