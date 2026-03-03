@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Randa Accessories - Training 101</title>
 
     <!-- Tailwind CSS -->
@@ -49,6 +52,12 @@
             CreditCard, CircleDashed, Layout, PenTool, Scale, Stamp,
             ArrowUp, Shield, Printer, Wifi, Award
         } from 'https://esm.sh/lucide-react@0.292.0?deps=react@18.2.0';
+
+        /* -------------------------------------------------------------
+           CACHE BUSTER — automatically derived from the file's last-modified
+           date so every deployment gets fresh assets with no manual updates.
+           ------------------------------------------------------------- */
+        const CACHE_BUSTER = new Date(document.lastModified).getTime();
 
         /* -------------------------------------------------------------
            ERROR BOUNDARY
@@ -99,7 +108,7 @@
             );
           }
           return (
-            <img src={src} alt={alt}
+            <img src={`${src}?v=${CACHE_BUSTER}`} alt={alt}
               className={`w-full ${className} object-cover rounded-2xl border border-stone-100 shadow-sm`}
               onError={() => setError(true)} />
           );
@@ -763,7 +772,7 @@
                         <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 mb-8 flex flex-col md:flex-row gap-6 items-start">
                             <div className="shrink-0 w-32 bg-white rounded-2xl p-3 flex items-center justify-center shadow-sm border border-amber-100">
                                 <img
-                                    src="./images/LWG-LOGO.PNG"
+                                    src={`./images/LWG-LOGO.PNG?v=${CACHE_BUSTER}`}
                                     alt="Leather Working Group Logo"
                                     className="w-full h-auto object-contain"
                                     onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='flex'; }}
@@ -1273,7 +1282,7 @@
                         <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                             <div className="flex items-center gap-4 text-stone-900">
                                 <div className="h-8 w-24 relative flex items-center justify-center">
-                                    <img src="images/randa-logo.png" alt="Randa Apparel & Accessories" className="w-full h-full object-contain" />
+                                    <img src={`images/randa-logo.png?v=${CACHE_BUSTER}`} alt="Randa Apparel & Accessories" className="w-full h-full object-contain" />
                                 </div>
                                 <div className="h-6 w-px bg-stone-300 hidden md:block"></div>
                                 <span className="font-serif font-semibold text-xl tracking-tight hidden md:inline-block">
@@ -1370,7 +1379,7 @@
                         <div className="max-w-7xl mx-auto px-6 text-center">
                             <div className="flex flex-col items-center justify-center gap-4 mb-8 opacity-60">
                                 <div className="h-8 w-24 relative flex items-center justify-center">
-                                    <img src="images/randa-logo.png" alt="Randa Apparel & Accessories" className="w-full h-full object-contain" />
+                                    <img src={`images/randa-logo.png?v=${CACHE_BUSTER}`} alt="Randa Apparel & Accessories" className="w-full h-full object-contain" />
                                 </div>
                                 <span className="font-serif font-bold text-xl">Product Education</span>
                             </div>
