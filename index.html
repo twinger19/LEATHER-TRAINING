@@ -105,6 +105,47 @@
           );
         };
 
+        /* Zoomable Image — pop-out on hover using fixed-position overlay */
+        const ZoomableImage = ({ src, alt, containerClass = "h-32 w-full", objectFit = "cover" }) => {
+          const [hovered, setHovered] = useState(false);
+          const [overlayStyle, setOverlayStyle] = useState({});
+          const [hasError, setHasError] = useState(false);
+          const ref = React.useRef(null);
+
+          const handleEnter = () => {
+            if (ref.current) {
+              const r = ref.current.getBoundingClientRect();
+              const zw = r.width * 2;
+              const zh = r.height * 2;
+              const left = Math.max(8, Math.min(window.innerWidth - zw - 8, r.left - r.width / 2));
+              const top = Math.max(8, Math.min(window.innerHeight - zh - 8, r.top - r.height / 2));
+              setOverlayStyle({ position: 'fixed', left, top, width: zw, height: zh, zIndex: 9999, pointerEvents: 'none' });
+            }
+            setHovered(true);
+          };
+
+          if (hasError) {
+            return (
+              <div className={`${containerClass} bg-stone-100 border-2 border-dashed border-stone-300 rounded-2xl flex flex-col items-center justify-center text-stone-400 gap-2 cursor-zoom-in`}>
+                <ImageIcon size={24} />
+                <span className="font-mono text-xs uppercase tracking-widest text-center px-2">{src.split('/').pop()}</span>
+              </div>
+            );
+          }
+
+          return (
+            <div ref={ref} className={`${containerClass} rounded-2xl overflow-hidden cursor-zoom-in relative`}
+              onMouseEnter={handleEnter} onMouseLeave={() => setHovered(false)}>
+              <img src={src} alt={alt || ''} className={`w-full h-full object-${objectFit} rounded-2xl border border-stone-100 shadow-sm`} onError={() => setHasError(true)} />
+              {hovered && (
+                <div style={overlayStyle} className="rounded-2xl shadow-2xl overflow-hidden border-2 border-white bg-white">
+                  <img src={src} alt={alt || ''} className={`w-full h-full object-${objectFit}`} />
+                </div>
+              )}
+            </div>
+          );
+        };
+
         /* Jump navigation — links within a module */
         const JumpNav = ({ links }) => (
           <div className="flex gap-2 flex-wrap mb-12 pb-4 border-b border-stone-100 no-print overflow-x-auto">
@@ -317,12 +358,19 @@
            DATA: BELT 101
            ------------------------------------------------------------- */
         const beltAnatomy = [
-            { part: "Tip", desc: "The pointed, squared-off, or tapered end opposite the buckle." },
-            { part: "Strap", desc: "The main body, typically leather or fabric." },
-            { part: "Lining", desc: "The underside of the strap, often made of a different material for comfort, stability, or style." },
-            { part: "Keeper", desc: "Loop that holds the free end of the strap after fastening." },
-            { part: "Buckle", desc: "The fastening device. Includes frame, prong, and nose." },
-            { part: "Bartack / Tab", desc: "Reinforced stitch securing buckle and keeper, or the folded return of the strap." }
+            { num: 1,  part: "Tip",             desc: "The end of the belt strap opposite the buckle. Can be pointed (dress/English), blunt, or tapered depending on style and formality." },
+            { num: 2,  part: "Edge",            desc: "The outer perimeter of the strap, finished in various ways — cut round, feather, drop, or domed — to define the belt's formality and character." },
+            { num: 3,  part: "Feather Edge",    desc: "A specific edge treatment where the leather tapers down very thinly to blend seamlessly into the surface — a hallmark of refined, dress-quality construction." },
+            { num: 4,  part: "Lining",          desc: "The underside of the belt strap, often made of a different material (twill, poly, or split leather) for added comfort, stability, and durability." },
+            { num: 5,  part: "Holes",           desc: "Punched openings along the strap that accept the buckle prong. Standard belts have 5 holes spaced 1 inch apart; 7-hole belts offer extended adjustability." },
+            { num: 6,  part: "Harness",         desc: "The buckle frame assembly — typically a rectangular or D-shaped frame that anchors the prong and attaches to the strap via a folded turnback." },
+            { num: 7,  part: "Prong / Prong Seat", desc: "The metal pin on the buckle that passes through a hole to secure the belt. The prong seat is the inner nose area of the frame where the prong rests when fastened." },
+            { num: 8,  part: "Bar Tack",        desc: "A dense, reinforced stitch bar sewn across the strap where the buckle and keeper attach — distributing stress and preventing tearing at high-tension points." },
+            { num: 9,  part: "Loop / Keeper",   desc: "A small loop of leather or fabric that holds down the free end of the belt after it passes through the buckle, keeping excess strap neat and in place." },
+            { num: 10, part: "Ornament / Rivet", desc: "Decorative hardware — a metal emblem, logo plate, or rivet — applied to the strap surface. Can be both aesthetic and functional, securing layers together." },
+            { num: 11, part: "Tab",             desc: "The folded return of the strap leather that wraps back around the buckle bar, securing the hardware to the belt body. Sometimes called the turnback." },
+            { num: 12, part: "Strap",           desc: "The main body of the belt — the long, continuous strip of leather, synthetic, or fabric material that wraps around the waist." },
+            { num: 13, part: "Edge Stitching",  desc: "A line of stitching running parallel and close to the edge of the strap. Provides structural reinforcement and signals construction quality." },
         ];
 
         const beltEdges = [
@@ -334,38 +382,60 @@
 
         const beltStitches = [
             { type: "Casual", spi: "5-6 SPI", thread: "Heavy Weight", img: "stitch-casual.jpg" },
-            { type: "Refined", spi: "7-8 SPI", thread: "Medium Weight", img: "stitch-refined.jpg" },
+            { type: "Dress Casual", spi: "7-8 SPI", thread: "Medium Weight", img: "stitch-refined.jpg" },
             { type: "Dress", spi: "9-10 SPI", thread: "Light Weight", img: "stitch-dress.jpg" },
+        ];
+
+        const beltBuckles = [
+            { name: "Harness",    img: "buckle-harness.jpg",     desc: "Classic rectangular or D-shaped frame with a center prong. The most versatile and widely used buckle style." },
+            { name: "Center Bar", img: "buckle-center-bar.jpg",  desc: "A crossbar spans the center of the frame where the prong mounts, giving it a clean, tailored silhouette." },
+            { name: "Plaque",     img: "buckle-plaque.jpg",      desc: "A solid front plate, often logo-forward, with a hidden prong that attaches from the back of the frame." },
+            { name: "Reversible", img: "buckle-reversible.jpg",  desc: "A swivel center post lets the strap rotate, enabling two-tone or two-sided belt designs from a single strap." },
+            { name: "Track Lock", img: "buckle-track-lock.jpg",  desc: "Ratchet-style with teeth instead of holes for micro-adjustable, tool-free fit — no punched holes required." },
+            { name: "Compression",img: "buckle-compression.jpg", desc: "Grip-based closure that clamps the strap without a prong. Common in tactical, outdoor, and sport belts." },
+        ];
+
+        const beltTipShapes = [
+            { name: "English Tip", img: "tip-english.jpg", desc: "A classic V-shaped pointed tip with a slight notch cut from the center. Traditional and versatile — common in dress and premium casual belts." },
+            { name: "Dress Tip",   img: "tip-dress.jpg",   desc: "A clean, symmetric pointed tip with gentle tapered curves. Refined and formal — the standard tip for dress belts." },
+            { name: "Blunt Tip",   img: "tip-blunt.jpg",   desc: "A flat, squared-off end. Modern and casual in character, often seen on western, canvas, and contemporary-style belts." },
         ];
 
         const beltGlossary = [
             { term: "Arms (Buckle)", def: "The side parts of the buckle frame." },
+            { term: "Bar Tack", def: "A dense, reinforced stitch bar sewn across the strap where the buckle and keeper attach, distributing stress and preventing tearing at high-tension points." },
             { term: "Bartack", def: "A reinforced stitch used to secure the buckle and keeper." },
             { term: "Beveled Edge", def: "An edge that is angled or sloped rather than cut straight at 90 degrees." },
-            { term: "Blunt Tip", def: "A belt tip with a squared-off, flat end." },
+            { term: "Blunt Tip", def: "A belt tip with a squared-off, flat end. Modern and casual in character." },
             { term: "Center Bar Buckle", def: "A buckle featuring a central crossbar where the prong is mounted." },
             { term: "Cut Round Edge", def: "A slightly rounded cut on the outer perimeter of the strap for a better edge feel." },
-            { term: "Dress Tip", def: "A pointed, formal end to the belt strap, typically standard for dress belts." },
+            { term: "Dress Tip", def: "A clean, symmetric pointed tip with gentle tapered curves — the standard for dress belts." },
             { term: "Drop Edge", def: "A structural edge with a distinct step-down ridge." },
-            { term: "English Tip", def: "A traditional V-shaped pointed tip." },
-            { term: "Feather Edge", def: "An edge that tapers down to a thin point, blending into the surface." },
+            { term: "Edge", def: "The outer perimeter of the belt strap. The edge finish — cut round, feather, drop, or domed — is a primary indicator of a belt's quality and formality level." },
+            { term: "Edge Stitching", def: "A line of stitching running parallel and close to the edge of the strap, providing structural reinforcement and signaling construction quality." },
+            { term: "English Tip", def: "A traditional V-shaped pointed tip with a slight notch cut from the center. Classic and versatile." },
+            { term: "Feather Edge", def: "An edge that tapers down to a thin point, blending seamlessly into the surface — a hallmark of refined, dress-quality construction." },
             { term: "Filler", def: "Material placed between the top layer and lining to add thickness, shape, or padding (e.g., Soft Bond, EVA)." },
             { term: "Harness Buckle", def: "A classic buckle featuring a frame (often D-shaped or square) with a center prong." },
+            { term: "Holes", def: "Punched openings along the strap that accept the buckle prong. Standard belts have 5 holes spaced 1 inch apart; 7-hole belts extend adjustability." },
             { term: "Keeper", def: "A loop that holds the free end of the belt after it's fastened." },
             { term: "Lining", def: "The underside of the belt strap, often made of a different material for comfort, durability, or style." },
+            { term: "Loop", def: "See Keeper — a loop (sometimes a separate sewn ring) that holds the free end of the strap in place after fastening." },
             { term: "Nose", def: "The front part of the buckle frame where the prong rests." },
+            { term: "Ornament / Rivet", def: "Decorative or functional hardware — a metal emblem, logo plate, or rivet — applied to the strap surface." },
             { term: "Plaque Buckle", def: "A solid, plate-style front buckle, often featuring a logo, where the peg/prong attaches from behind." },
             { term: "Prong", def: "The metal pin on a buckle that goes through the belt holes to secure it." },
+            { term: "Prong Seat", def: "The inner nose area of the buckle frame where the prong rests when the belt is fastened." },
             { term: "Ratchet / Track Lock Buckle", def: "A buckle with a mechanism for precise adjustments without traditional holes." },
             { term: "Reversible Belt", def: "A belt constructed to be worn with either side facing out, often utilizing a swivel buckle." },
             { term: "Single Layer (Bridle)", def: "A belt construction using a single thick piece of material, very rugged and durable." },
-            { term: "SPI (Stitches Per Inch)", def: "The number of stitches in one inch of seam. Higher SPI generally indicates a more refined or dressy belt." },
+            { term: "SPI (Stitches Per Inch)", def: "The number of stitches in one linear inch of seam. Higher SPI indicates finer thread and a more formal, dress-quality construction." },
             { term: "Split & Recombined", def: "A construction where two layers are thinned and glued together, often to allow for a domed shape." },
-            { term: "Strap", def: "The main body of the belt." },
+            { term: "Strap", def: "The main body of the belt — the long strip of leather, synthetic, or fabric that wraps around the waist." },
             { term: "Stretch Elastic / Webbing", def: "Strong, woven or elastic fabrics used in belt construction for versatility and comfort." },
-            { term: "Tab", def: "A folded return of the strap or a small piece of material that secures the end of the belt strap to the buckle." },
+            { term: "Tab", def: "The folded return of the strap leather that wraps around the buckle bar, securing hardware to the belt body. Sometimes called the turnback." },
             { term: "Tapered Tip", def: "A belt tip that gradually narrows down towards the end." },
-            { term: "Tip", def: "The pointed, squared-off, or tapered end of the belt strap opposite the buckle." },
+            { term: "Tip", def: "The end of the belt strap opposite the buckle. Tip shape (English, Dress, Blunt) contributes to overall style and formality." },
             { term: "Trapunto", def: "A quilting technique that creates a raised, padded pattern on the leather." },
             { term: "Turnback", def: "The folded portion of the strap that wraps around the buckle to secure it." }
         ];
@@ -379,7 +449,7 @@
             { name: "Tri-fold", desc: "Folds twice into thirds. Offers more capacity but can be bulkier in the pocket.", img: "sil-trifold.jpg" },
             { name: "Front Pocket (FPW)", desc: "Minimalist design intended for front pocket carry. Often includes a money clip or built-in magnet.", img: "sil-front-pocket.jpg" },
             { name: "Cardcase", desc: "Ultra-slim profile designed strictly for holding a few essential cards.", img: "sil-cardcase.jpg" },
-            { name: "Organizer", desc: "Large, zip-around or snap closure wallet designed to hold currency, cards, coins, and a passport or phone.", img: "sil-organizer.jpg" },
+            { name: "Specialty Construction", desc: "Wallets come in a wide range of specialty builds — from ultra-slim minimalists to extra-capacity organizers designed to hold currency, cards, coins, and a phone.", img: "sil-organizer.jpg" },
         ];
 
         const walletConstruction = [
@@ -398,19 +468,27 @@
 
         const walletGlossary = [
             { term: "Bill Compartment", def: "The area for storing cash, typically a long pocket that runs the width of the wallet. Can be single or double (divided)." },
-            { term: "Blind Emboss", def: "A logo or design pressed into the leather without the use of foil or color." },
+            { term: "Blind Emboss", def: "A logo or design pressed into the leather without the use of foil or color — subtle and elegant." },
             { term: "Card Slots", def: "Compartments designed to hold credit cards, debit cards, and IDs. Can be horizontal or vertical." },
-            { term: "Cover", def: "The outer panel of the wallet, often featuring the brand logo." },
+            { term: "Cover", def: "The outer panel of the wallet — the primary surface that defines the visual identity, grain texture, and brand impression." },
+            { term: "Cover Stitching", def: "External stitching that runs along the perimeter of the wallet cover, securing the layers and serving as a key visual design detail." },
             { term: "Debossing", def: "A technique that indents a design into the material." },
+            { term: "Edge", def: "The finished outer perimeter of the wallet. Edge treatment (turned, cut, painted, or burnished) signals construction quality and formality." },
             { term: "Edge Crease", def: "A decorative heated line pressed along the edge of a card slot or wallet border." },
-            { term: "Embossing", def: "A technique that raises a design from the surface of the material." },
+            { term: "Embossed Logo", def: "The brand mark pressed into the leather surface — typically applied to the interior panel as a blind emboss for a refined, understated look." },
+            { term: "Embossing", def: "A technique that raises a design from the surface of the material using heat and pressure dies." },
+            { term: "Extra Capacity", def: "Additional card slots, gusseted pockets, or expandable compartments that increase storage beyond a standard configuration." },
             { term: "ID Window", def: "A clear pocket, often using mesh or plastic, for displaying identification." },
+            { term: "Interior Stay", def: "A reinforced center panel inside the bill compartment that provides structure and prevents the wallet from distorting with use." },
             { term: "Lining", def: "The interior material (twill, poly twill, chambray, denim) that protects contents and adds structure." },
+            { term: "Ornament", def: "A decorative hardware element — typically a metal logo plate, rivet, or emblem — applied to the exterior for branding and style." },
             { term: "Passcase", def: "A flap, often removable, containing an ID window. Adds capacity to a standard billfold." },
             { term: "Perforation (Perf)", def: "A design technique using small punched holes for visual texture or breathability." },
+            { term: "Pocket", def: "An open-ended flat or gusseted compartment for receipts, business cards, or small folded items beyond the structured card slots." },
             { term: "RFID Protection", def: "Hidden metallic lining (Faraday cage) that blocks radio frequency signals to prevent electronic card skimming." },
-            { term: "Spine", def: "The folded edge that connects the front and back panels, allowing the wallet to fold flat." },
-            { term: "Stay", def: "The center spine of the wallet's interior, often reinforced for added durability and structure." }
+            { term: "Spine", def: "The folded center edge that connects the front and back covers, allowing the wallet to open and fold flat." },
+            { term: "Stay", def: "The center spine of the wallet's interior, often reinforced for added durability and structure." },
+            { term: "Turned Edge", def: "A construction technique where the raw leather edge is folded over and stitched flat, creating a clean, durable, and refined finish on the wallet perimeter." }
         ];
 
         /* -------------------------------------------------------------
@@ -1062,8 +1140,27 @@
         /* -------------------------------------------------------------
            BELT MODULE
            ------------------------------------------------------------- */
+        // Approximate [left%, top%] positions of each numbered part on the belt anatomy image
+        // Belt is horizontal; buckle on left, tip on right
+        const beltPartPositions = {
+            1:  [91, 42],  // Tip
+            2:  [74,  8],  // Edge
+            3:  [62,  8],  // Feather Edge
+            4:  [57, 82],  // Lining
+            5:  [47, 45],  // Holes
+            6:  [ 8, 32],  // Harness
+            7:  [ 4, 52],  // Prong / Prong Seat
+            8:  [22, 42],  // Bar Tack
+            9:  [33, 15],  // Loop / Keeper
+            10: [42, 15],  // Ornament / Rivet
+            11: [14, 68],  // Tab
+            12: [60, 42],  // Strap
+            13: [78, 82],  // Edge Stitching
+        };
+
         const BeltModule = React.memo(() => {
             const [searchTerm, setSearchTerm] = useState('');
+            const [activeAnatomyPart, setActiveAnatomyPart] = useState(null);
             const filteredGlossary = useMemo(() => beltGlossary.filter(item =>
                 item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.def.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1076,6 +1173,7 @@
                 { id: 'belt-edges', label: 'Edge Profiles' },
                 { id: 'belt-stitching', label: 'Stitching' },
                 { id: 'belt-buckles', label: 'Buckle Types' },
+                { id: 'belt-tips', label: 'Tip Shapes' },
                 { id: 'belt-glossary', label: 'Glossary' },
             ];
 
@@ -1086,11 +1184,20 @@
                     <section id="belt-anatomy">
                         <SectionHeading subtitle="The essential parts that make up a belt.">Belt Anatomy</SectionHeading>
                         <div className="bg-white rounded-3xl p-8 border border-stone-100 shadow-sm flex flex-col items-center w-full mb-8">
-                            <AssetImage src="images/belt-anatomy-large.jpg" alt="Belt Anatomy" className="w-full max-w-5xl h-64 md:h-96 object-contain bg-white mb-8" />
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-5xl">
-                                {beltAnatomy.map((part, i) => (
-                                    <div key={i} className="p-4 rounded-xl border border-stone-100 bg-stone-50">
-                                        <h4 className="font-bold text-stone-900 text-sm mb-1">{part.part}</h4>
+                            <div className="w-full max-w-5xl mb-6">
+                                <AssetImage src="images/belt-anatomy-large.jpg" alt="Belt Anatomy" className="w-full h-64 md:h-96 object-contain bg-white" />
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 w-full max-w-5xl">
+                                {beltAnatomy.map((part) => (
+                                    <div key={part.num}
+                                        className={`p-4 rounded-xl border cursor-default transition-all duration-200 ${activeAnatomyPart === part.num ? 'bg-amber-50 border-amber-300 shadow-md scale-[1.02]' : 'bg-stone-50 border-stone-100 hover:bg-amber-50/50 hover:border-amber-200'}`}
+                                        onMouseEnter={() => setActiveAnatomyPart(part.num)}
+                                        onMouseLeave={() => setActiveAnatomyPart(null)}
+                                    >
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 transition-colors ${activeAnatomyPart === part.num ? 'bg-amber-600 text-white' : 'bg-stone-300 text-stone-600'}`}>{part.num}</span>
+                                            <h4 className={`font-bold text-sm transition-colors ${activeAnatomyPart === part.num ? 'text-amber-800' : 'text-stone-900'}`}>{part.part}</h4>
+                                        </div>
                                         <p className="text-stone-600 text-xs leading-relaxed">{part.desc}</p>
                                     </div>
                                 ))}
@@ -1154,9 +1261,9 @@
                     <section id="belt-construction">
                         <SectionHeading>Construction</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-8">
-                            <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Rugged, durable.</p><AssetImage src="images/const-single-layer.jpg" className="h-32" /></Card>
-                            <Card><h3 className="font-bold text-lg mb-2">Split & Recombined</h3><p className="text-sm text-stone-500 mb-4">Domed shape.</p><AssetImage src="images/const-split-recombined.jpg" className="h-32" /></Card>
-                            <Card><h3 className="font-bold text-lg mb-2">Reversible</h3><p className="text-sm text-stone-500 mb-4">Two looks.</p><AssetImage src="images/const-reversible.jpg" className="h-32" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Rugged, durable.</p><ZoomableImage src="images/const-single-layer.jpg" alt="Single Layer" containerClass="h-32 w-full" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Split & Recombined</h3><p className="text-sm text-stone-500 mb-4">Domed shape.</p><ZoomableImage src="images/const-split-recombined.jpg" alt="Split and Recombined" containerClass="h-32 w-full" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Reversible</h3><p className="text-sm text-stone-500 mb-4">Two looks.</p><ZoomableImage src="images/const-reversible.jpg" alt="Reversible" containerClass="h-32 w-full" /></Card>
                         </div>
                     </section>
 
@@ -1166,14 +1273,14 @@
                             {beltEdges.map((edge, i) => (
                                 <div key={i} className={`${edge.bg} p-6 rounded-2xl text-center`}>
                                     <h4 className="font-serif font-bold mb-2">{edge.name}</h4><p className="text-xs text-stone-500 mb-4">{edge.desc}</p>
-                                    <AssetImage src={`images/${edge.img}`} className="h-24" />
+                                    <ZoomableImage src={`images/${edge.img}`} alt={edge.name} containerClass="h-48 w-full" />
                                 </div>
                             ))}
                         </div>
                     </section>
 
                     <section id="belt-stitching">
-                        <SectionHeading subtitle="SPI indicates refinement.">Stitching Details</SectionHeading>
+                        <SectionHeading subtitle="SPI (Stitches Per Inch) is the number of stitches in one linear inch of seam — a key indicator of construction quality and formality. The higher the SPI, the finer the thread and the more refined the look.">Stitching Details</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-6">
                             {beltStitches.map((stitch, i) => (
                                 <Card key={i}>
@@ -1182,7 +1289,7 @@
                                         <span className="text-amber-600 font-mono text-sm bg-amber-50 px-2 py-1 rounded">{stitch.spi}</span>
                                     </div>
                                     <p className="text-stone-500 text-sm mb-4">{stitch.thread}</p>
-                                    <AssetImage src={`images/${stitch.img}`} alt={stitch.type} className="h-24" />
+                                    <ZoomableImage src={`images/${stitch.img}`} alt={stitch.type} containerClass="h-56 w-full" objectFit="contain" />
                                 </Card>
                             ))}
                         </div>
@@ -1191,10 +1298,28 @@
                     <section id="belt-buckles">
                         <SectionHeading>Buckle Types</SectionHeading>
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                            {["Harness", "Center Bar", "Plaque", "Reversible", "Track Lock", "Compression"].map((b, i) => (
-                                <div key={i} className="bg-white p-6 rounded-2xl border border-stone-100 text-center flex flex-col items-center">
-                                    <AssetImage src={`images/buckle-${b.toLowerCase().replaceAll(' ', '-')}.jpg`} className="h-48 w-full object-contain mb-4" />
-                                    <span className="block mt-3 text-lg font-medium text-stone-900">{b}</span>
+                            {beltBuckles.map((b, i) => (
+                                <div key={i} className="bg-white p-6 rounded-2xl border border-stone-100 text-center flex flex-col items-center shadow-sm">
+                                    <div className="w-full aspect-square overflow-hidden rounded-2xl mb-4 bg-stone-50">
+                                        <AssetImage src={`images/${b.img}`} alt={b.name} className="h-full" />
+                                    </div>
+                                    <span className="block text-lg font-bold text-stone-900 mb-1">{b.name}</span>
+                                    <p className="text-xs text-stone-500 leading-relaxed">{b.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section id="belt-tips">
+                        <SectionHeading subtitle="The tip shape contributes to the overall character and formality of a belt.">Tip Shapes</SectionHeading>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {beltTipShapes.map((tip, i) => (
+                                <div key={i} className="bg-white p-6 rounded-2xl border border-stone-100 text-center flex flex-col items-center shadow-sm">
+                                    <h3 className="text-xl font-bold font-serif text-stone-900 mb-2">{tip.name}</h3>
+                                    <p className="text-sm text-stone-500 mb-6 leading-relaxed">{tip.desc}</p>
+                                    <div className="w-full overflow-hidden rounded-2xl bg-stone-50">
+                                        <AssetImage src={`images/${tip.img}`} alt={tip.name} className="h-48" />
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -1233,8 +1358,27 @@
         /* -------------------------------------------------------------
            WALLET MODULE
            ------------------------------------------------------------- */
+        // Approximate [left%, top%] positions for wallet anatomy images
+        const walletExtPositions = {
+            1: [82, 82],  // Cover Stitching
+            2: [50, 45],  // Cover
+            3: [35, 38],  // Embossing
+            4: [65, 22],  // Ornament
+            5: [ 8, 52],  // Edge
+            6: [50, 90],  // Spine
+        };
+        const walletIntPositions = {
+            1: [50, 42],  // Interior Stay
+            2: [50, 70],  // Bill Compartment
+            3: [80, 50],  // Pocket
+            4: [12, 84],  // Turned Edge
+            5: [32, 25],  // Embossed Logo
+            6: [78, 18],  // Extra Capacity
+        };
+
         const WalletModule = React.memo(() => {
             const [searchTerm, setSearchTerm] = useState('');
+            const [activeWalletPart, setActiveWalletPart] = useState(null);
             const filteredGlossary = useMemo(() => walletGlossary.filter(item =>
                 item.term.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.def.toLowerCase().includes(searchTerm.toLowerCase())
@@ -1258,22 +1402,59 @@
                         <div className="grid lg:grid-cols-2 gap-12">
                             <Card className="bg-[#F9F8F6] border-stone-200">
                                 <h3 className="text-2xl font-bold font-serif mb-6 flex items-center gap-3 text-stone-900"><Layout size={24} className="text-amber-600"/> Exterior</h3>
-                                <AssetImage src="images/wallet-anatomy-exterior.png" className="h-64 object-contain mix-blend-multiply mb-6" />
-                                <ul className="space-y-4 text-sm text-stone-700">
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Cover:</strong> The outer panel, provides protection and primary aesthetic appeal.</span></li>
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Spine:</strong> The folded edge connecting front and back panels, allowing it to fold flat.</span></li>
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Ornament / Logo:</strong> External branding, usually embossed or applied via metal hardware.</span></li>
-                                </ul>
+                                <div className="w-full mb-4">
+                                    <AssetImage src="images/wallet-anatomy-exterior.png" className="h-64 object-contain mix-blend-multiply" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { num: 1, part: "Cover Stitching", desc: "External stitching along the wallet's perimeter that secures the layers and adds a refined visual detail." },
+                                        { num: 2, part: "Cover", desc: "The outer panel — the primary surface defining visual identity, grain texture, and brand impression." },
+                                        { num: 3, part: "Embossing", desc: "A raised pattern, logo, or texture pressed into the leather cover using heat and pressure dies." },
+                                        { num: 4, part: "Ornament", desc: "A metal logo plate, rivet, or decorative hardware element applied to the exterior for branding and style." },
+                                        { num: 5, part: "Edge", desc: "The finished outer perimeter. Edge treatment (turned, cut, painted, burnished) signals construction quality." },
+                                        { num: 6, part: "Spine", desc: "The folded center edge connecting front and back covers, allowing the wallet to open and fold flat." },
+                                    ].map((item) => (
+                                        <div key={item.num}
+                                            className={`p-3 rounded-xl border cursor-default transition-all duration-200 ${activeWalletPart === ('ext-' + item.num) ? 'bg-amber-50 border-amber-300 shadow-sm scale-[1.02]' : 'bg-white border-stone-100 hover:bg-amber-50/50 hover:border-amber-200'}`}
+                                            onMouseEnter={() => setActiveWalletPart('ext-' + item.num)}
+                                            onMouseLeave={() => setActiveWalletPart(null)}
+                                        >
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 transition-colors ${activeWalletPart === ('ext-' + item.num) ? 'bg-amber-600 text-white' : 'bg-stone-300 text-stone-600'}`}>{item.num}</span>
+                                                <h4 className={`font-bold text-xs transition-colors ${activeWalletPart === ('ext-' + item.num) ? 'text-amber-800' : 'text-stone-900'}`}>{item.part}</h4>
+                                            </div>
+                                            <p className="text-stone-500 text-xs leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </Card>
                             <Card className="bg-[#F9F8F6] border-stone-200">
                                 <h3 className="text-2xl font-bold font-serif mb-6 flex items-center gap-3 text-stone-900"><CreditCard size={24} className="text-amber-600"/> Interior</h3>
-                                <AssetImage src="images/wallet-anatomy-interior.png" className="h-64 object-contain mix-blend-multiply mb-6" />
-                                <ul className="space-y-4 text-sm text-stone-700">
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Card Slots & Pocket Shapes:</strong> Storage for cards, defined by specific edge creasing or shaping.</span></li>
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Stay:</strong> The center spine reinforcement inside the bill compartment.</span></li>
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>Bill Divider:</strong> A panel separating the main cash compartment into two sections.</span></li>
-                                    <li className="flex gap-3"><CheckCircle size={18} className="text-amber-500 shrink-0"/> <span><strong>ID Window:</strong> A mesh or clear plastic slot for displaying identification.</span></li>
-                                </ul>
+                                <div className="w-full mb-4">
+                                    <AssetImage src="images/wallet-anatomy-interior.png" className="h-64 object-contain mix-blend-multiply" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { num: 1, part: "Interior Stay", desc: "A reinforced center panel inside the bill compartment that provides structure and prevents distortion with use." },
+                                        { num: 2, part: "Bill Compartment", desc: "The main open pocket spanning the wallet's width, designed to hold folded currency." },
+                                        { num: 3, part: "Pocket", desc: "An open-ended flat or gusseted compartment for receipts, business cards, or small items beyond card slots." },
+                                        { num: 4, part: "Turned Edge", desc: "Raw leather edge folded over and stitched flat — a clean, durable, refined construction technique." },
+                                        { num: 5, part: "Embossed Logo", desc: "Brand mark pressed into the interior panel — typically a blind emboss for a subtle, premium feel." },
+                                        { num: 6, part: "Extra Capacity", desc: "Additional slots, gusseted pockets, or expandable compartments that increase storage beyond standard." },
+                                    ].map((item) => (
+                                        <div key={item.num}
+                                            className={`p-3 rounded-xl border cursor-default transition-all duration-200 ${activeWalletPart === ('int-' + item.num) ? 'bg-amber-50 border-amber-300 shadow-sm scale-[1.02]' : 'bg-white border-stone-100 hover:bg-amber-50/50 hover:border-amber-200'}`}
+                                            onMouseEnter={() => setActiveWalletPart('int-' + item.num)}
+                                            onMouseLeave={() => setActiveWalletPart(null)}
+                                        >
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold shrink-0 transition-colors ${activeWalletPart === ('int-' + item.num) ? 'bg-amber-600 text-white' : 'bg-stone-300 text-stone-600'}`}>{item.num}</span>
+                                                <h4 className={`font-bold text-xs transition-colors ${activeWalletPart === ('int-' + item.num) ? 'text-amber-800' : 'text-stone-900'}`}>{item.part}</h4>
+                                            </div>
+                                            <p className="text-stone-500 text-xs leading-relaxed">{item.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </Card>
                         </div>
                     </section>
@@ -1298,7 +1479,7 @@
                                 <div key={i} className="p-6 bg-white rounded-3xl border border-stone-200 text-center flex flex-col items-center shadow-sm">
                                     <h4 className="font-bold text-lg mb-2 text-stone-900">{item.title}</h4>
                                     <p className="text-xs text-stone-600 mb-6 h-10">{item.desc}</p>
-                                    <AssetImage src={`images/${item.img}`} alt={item.title} className="h-24 w-full object-cover rounded-xl" />
+                                    <ZoomableImage src={`images/${item.img}`} alt={item.title} containerClass="h-48 w-full" />
                                 </div>
                             ))}
                         </div>
@@ -1311,11 +1492,11 @@
                                 { img: "detail-emboss.jpg", label: "Blind Emboss" },
                                 { img: "detail-perf.jpg", label: "Perforation (Perf)" },
                                 { img: "detail-hardware.jpg", label: "Metal Ornament" },
-                                { img: "detail-lining.jpg", label: "Hidden Lining / RFID" },
+                                { img: "detail-stitching.jpg", label: "Stitching Details" },
                                 { img: "detail-moneyclip.jpg", label: "Money Clip" },
                             ].map((detail, i) => (
                                 <div key={i} className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                                    <AssetImage src={`images/${detail.img}`} alt={detail.label} className="h-32" />
+                                    <ZoomableImage src={`images/${detail.img}`} alt={detail.label} containerClass="h-32 w-full" />
                                     <p className="text-xs font-bold text-center text-stone-700 uppercase">{detail.label}</p>
                                 </div>
                             ))}
