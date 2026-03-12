@@ -45,15 +45,251 @@
         ::-webkit-scrollbar-thumb { background: #E5E5E5; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #D4D4D4; }
 
-        /* Print Styles */
+        /* =============================================
+           PRINT STYLES — Comprehensive Print / PDF
+           ============================================= */
         @media print {
-            .no-print { display: none !important; }
-            nav { display: none !important; }
-            .fixed { position: static !important; }
-            body { background: white !important; }
-            * { animation: none !important; transition: none !important; box-shadow: none !important; }
-            header { padding-top: 2rem !important; }
-            section { page-break-inside: avoid; }
+
+            /* ---------- RESET & BASE ---------- */
+            * {
+                animation: none !important;
+                transition: none !important;
+                box-shadow: none !important;
+                text-shadow: none !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                color-adjust: exact !important;
+            }
+            html { font-size: 11pt !important; }
+            body {
+                background: white !important;
+                color: #1c1917 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* ---------- HIDE NON-PRINT ELEMENTS ---------- */
+            .no-print,
+            nav,
+            button,
+            [role="button"],
+            .fixed:not(main):not(header):not(footer):not(section):not(div[class*="max-w-"]) {
+                display: none !important;
+            }
+            /* Hide: ambient background blurs, back-to-top, search overlay, mobile drawer */
+            div[class*="pointer-events-none"][class*="fixed"],
+            div[class*="bg-black/50"],
+            div[class*="fixed"][class*="z-40"],
+            div[class*="fixed"][class*="z-50"]:not(nav) {
+                display: none !important;
+            }
+
+            /* ---------- POSITIONING ---------- */
+            .fixed, .sticky { position: static !important; }
+            .absolute { position: relative !important; }
+
+            /* ---------- PAGE SETUP ---------- */
+            @page {
+                size: letter;
+                margin: 0.65in 0.6in 0.75in 0.6in;
+            }
+
+            /* ---------- HERO / HEADER ---------- */
+            header {
+                padding-top: 1.5rem !important;
+                padding-bottom: 1.5rem !important;
+                page-break-after: avoid;
+            }
+            header h1 {
+                font-size: 36pt !important;
+                line-height: 1.1 !important;
+            }
+            header p {
+                font-size: 12pt !important;
+            }
+            /* Hide the "Training Module 1.0" pill in print */
+            header div[class*="inline-flex"][class*="tracking-widest"] {
+                display: none !important;
+            }
+
+            /* ---------- SECTION SPACING ---------- */
+            main {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            main > div { gap: 2rem !important; }
+            section { margin-bottom: 1.5rem !important; }
+            /* Space between sections reduced from the 8rem web version */
+            main .space-y-32 > * + * { margin-top: 2rem !important; }
+
+            /* ---------- PAGE BREAKS ---------- */
+            section {
+                page-break-inside: auto;
+                break-inside: auto;
+            }
+            /* Each major section starts on a new page */
+            section[id] {
+                page-break-before: always;
+                break-before: page;
+            }
+            /* First section should NOT break before (follows hero) */
+            section[id="leather-intro"],
+            section[id="belt-anatomy-section"],
+            section[id="wallet-anatomy"] {
+                page-break-before: auto;
+                break-before: auto;
+            }
+            /* Never break inside a card */
+            div[class*="rounded-3xl"],
+            div[class*="rounded-2xl"],
+            div[class*="rounded-xl"] {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+
+            /* ---------- SECTION HEADINGS ---------- */
+            h2 {
+                font-size: 22pt !important;
+                margin-bottom: 0.5rem !important;
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            h2 + p, h2 + div {
+                page-break-before: avoid;
+            }
+            h3 { font-size: 14pt !important; }
+            h4 { font-size: 11pt !important; }
+
+            /* ---------- GRID LAYOUTS → PRINT FRIENDLY ---------- */
+            /* 5-column grids (e.g. processing steps) → 3 columns */
+            div[class*="lg:grid-cols-5"] {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            /* 4-column grids → 2 columns */
+            div[class*="lg:grid-cols-4"],
+            div[class*="md:grid-cols-4"] {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            /* 3-column grids → 2 columns */
+            div[class*="lg:grid-cols-3"]:not(div[class*="lg:grid-cols-4"]):not(div[class*="lg:grid-cols-5"]),
+            div[class*="md:grid-cols-3"]:not(div[class*="lg:grid-cols-4"]):not(div[class*="lg:grid-cols-5"]) {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            /* 2-column grids stay 2 columns */
+            div[class*="md:grid-cols-2"]:not(div[class*="md:grid-cols-3"]):not(div[class*="md:grid-cols-4"]) {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+
+            /* ---------- CARDS ---------- */
+            div[class*="rounded-3xl"] {
+                border-radius: 8px !important;
+                padding: 0.6rem !important;
+            }
+            div[class*="rounded-2xl"] {
+                border-radius: 6px !important;
+                padding: 0.5rem !important;
+            }
+
+            /* ---------- IMAGES ---------- */
+            img {
+                max-height: 180px !important;
+                object-fit: cover !important;
+                border-radius: 6px !important;
+                page-break-inside: avoid;
+            }
+            /* Anatomy diagram images can be a bit taller */
+            img[alt*="anatomy"], img[alt*="Anatomy"],
+            img[alt*="diagram"], img[alt*="Diagram"],
+            img[class*="mix-blend-multiply"] {
+                max-height: 220px !important;
+                object-fit: contain !important;
+            }
+            /* Hide zoom overlays */
+            div[style*="position: fixed"][style*="z-index: 9999"] {
+                display: none !important;
+            }
+
+            /* ---------- HIDE INTERACTIVE-ONLY ELEMENTS ---------- */
+            /* Jump navigation pills */
+            div[class*="border-b"][class*="border-stone-100"][class*="flex"][class*="gap-2"][class*="flex-wrap"] {
+                display: none !important;
+            }
+            /* Glossary search inputs */
+            input[type="text"] { display: none !important; }
+            /* Step connector arrows */
+            div[class*="absolute"][class*="-right-"] {
+                display: none !important;
+            }
+
+            /* ---------- SVG / INTERACTIVE DIAGRAM ---------- */
+            svg {
+                max-height: 250px !important;
+                page-break-inside: avoid;
+            }
+            /* Hide anatomy tooltip on SVG */
+            div[class*="cursor-zoom-in"] { cursor: default !important; }
+
+            /* ---------- TANNING METHODS ROW LAYOUT ---------- */
+            /* Tanning cards: stack image above text in print */
+            div[class*="rounded-3xl"][class*="flex-col"][class*="md:flex-row"] {
+                flex-direction: column !important;
+            }
+            div[class*="rounded-3xl"][class*="flex-col"][class*="md:flex-row"] > div:first-child {
+                width: 100% !important;
+                max-height: 140px !important;
+                overflow: hidden;
+            }
+
+            /* ---------- GLOSSARY ---------- */
+            /* Ensure glossary items are compact */
+            div[class*="gap-y-6"] { gap: 0.4rem !important; }
+
+            /* ---------- HIDE BACKGROUND DECORATIONS ---------- */
+            div[class*="blur-[120px]"],
+            div[class*="mix-blend-multiply"][class*="animate-pulse"] {
+                display: none !important;
+            }
+
+            /* ---------- FOOTER ---------- */
+            footer {
+                margin-top: 1rem !important;
+                padding: 1rem 0 !important;
+                border-top: 1px solid #d6d3d1 !important;
+                page-break-before: avoid;
+            }
+
+            /* ---------- TEXT SIZING FOR PRINT ---------- */
+            p { font-size: 10pt !important; line-height: 1.5 !important; }
+            .text-xs, .text-sm { font-size: 9pt !important; }
+            .text-xl { font-size: 13pt !important; }
+            .text-2xl { font-size: 15pt !important; }
+            li { font-size: 9pt !important; }
+
+            /* ---------- LINKS ---------- */
+            a { color: #1c1917 !important; text-decoration: none !important; }
+
+            /* ---------- PADDING / MARGIN REDUCTIONS ---------- */
+            .p-8 { padding: 0.6rem !important; }
+            .p-6 { padding: 0.5rem !important; }
+            .p-5 { padding: 0.4rem !important; }
+            .p-4 { padding: 0.35rem !important; }
+            .px-6 { padding-left: 0.4rem !important; padding-right: 0.4rem !important; }
+            .py-20 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
+            .pb-32 { padding-bottom: 1rem !important; }
+            .pt-40 { padding-top: 2rem !important; }
+            .pb-24 { padding-bottom: 1rem !important; }
+            .mb-12 { margin-bottom: 0.75rem !important; }
+            .mb-8 { margin-bottom: 0.5rem !important; }
+            .mb-6 { margin-bottom: 0.4rem !important; }
+            .mb-16 { margin-bottom: 1rem !important; }
+            .gap-12 { gap: 0.75rem !important; }
+            .gap-8 { gap: 0.5rem !important; }
+            .gap-6 { gap: 0.4rem !important; }
         }
     </style>
 </head>
