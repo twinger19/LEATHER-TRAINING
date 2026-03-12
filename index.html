@@ -78,7 +78,7 @@
         const SectionHeading = ({ children, subtitle, centered = false }) => (
           <div className={`mb-12 ${centered ? 'text-center' : ''}`}>
             <h2 className="text-4xl md:text-5xl font-serif text-stone-900 mb-6 leading-tight">{children}</h2>
-            {subtitle && <p className="text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">{subtitle}</p>}
+            {subtitle && <p className={`text-xl text-stone-600 max-w-3xl leading-relaxed ${centered ? 'mx-auto' : ''}`}>{subtitle}</p>}
           </div>
         );
 
@@ -220,7 +220,7 @@
         const leatherTypes = [
             { title: "Full-Grain", description: "The highest quality. Retains the tightly-knit natural grain layer. Boasts incredible tear strength even when skived thin. Yields to movement and develops a rich patina over time.", tag: "Premium", bg: "bg-[#F5F0E6]", accent: "text-amber-900" },
             { title: "Top-Grain / Corrected", description: "The natural surface is buffed to remove flaws, then coated or embossed for a completely uniform look. Retains some grain strength but loses breathability and the ability to patina.", tag: "Standard", bg: "bg-[#E8F1F2]", accent: "text-slate-800" },
-            { title: "Genuine / Split", description: "The lower 'Corium' layer separated via a splitting machine. Lacks the tight fiber structure of the grain. Often heavily PU-coated or embossed to mimic top-grain, but can peel over time.", tag: "Budget", bg: "bg-[#EFEFEF]", accent: "text-stone-600" },
+            { title: "Split", description: "The lower 'Corium' layer separated via a splitting machine. Lacks the tight fiber structure of the grain. Often heavily PU-coated or embossed to mimic top-grain, but can peel over time.", tag: "Budget", bg: "bg-[#EFEFEF]", accent: "text-stone-600" },
             { title: "Suede", description: "Created from the split (inner) layers of the hide and buffed to create a soft, velvet-like napped texture. Lightweight, flexible, and visually striking, though more vulnerable to moisture.", tag: "Textured", bg: "bg-[#F0EBE5]", accent: "text-stone-500" },
             { title: "PU / Synthetic", description: "100% synthetic (Polyurethane). Offers excellent consistency, high cutting yield, stretchability, and an accessible price point. However, it lacks the breathability, durability, and natural longevity of real leather.", tag: "Synthetic", bg: "bg-[#F5F5F5]", accent: "text-stone-400" },
             { title: "Bonded", description: "Leather scraps bonded with polyurethane. High yield, low longevity.", tag: "Composite", bg: "bg-[#FAFAFA]", accent: "text-stone-400" }
@@ -449,7 +449,7 @@
             { name: "Tri-fold", desc: "Folds twice into thirds. Offers more capacity but can be bulkier in the pocket.", img: "sil-trifold.jpg" },
             { name: "Front Pocket (FPW)", desc: "Minimalist design intended for front pocket carry. Often includes a money clip or built-in magnet.", img: "sil-front-pocket.jpg" },
             { name: "Cardcase", desc: "Ultra-slim profile designed strictly for holding a few essential cards.", img: "sil-cardcase.jpg" },
-            { name: "Specialty Construction", desc: "Wallets come in a wide range of specialty builds — from ultra-slim minimalists to extra-capacity organizers designed to hold currency, cards, coins, and a phone.", img: "sil-organizer.jpg" },
+            { name: "Specialty Construction", desc: "Purpose-built wallets ranging from ultra-slim minimalists to large-capacity organizers.", img: "sil-organizer.jpg" },
         ];
 
         const walletConstruction = [
@@ -987,7 +987,7 @@
                                 <p className="text-stone-400 text-sm mb-6">Legal and industry standards for product stamping based on the material layer.</p>
                                 <div className="space-y-4 flex-1">
                                     {[
-                                        { mat: "Top Grain Leather", stamp: "Genuine Leather" },
+                                        { mat: "Top Grain Leather", stamp: "Leather" },
                                         { mat: "Finished Split", stamp: "Leather" },
                                         { mat: "PU Split", stamp: "Leather" },
                                         { mat: "PU on Split", stamp: "Coated Leather" },
@@ -1261,9 +1261,9 @@
                     <section id="belt-construction">
                         <SectionHeading>Construction</SectionHeading>
                         <div className="grid md:grid-cols-3 gap-8">
-                            <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Rugged, durable.</p><ZoomableImage src="images/const-single-layer.jpg" alt="Single Layer" containerClass="h-32 w-full" /></Card>
-                            <Card><h3 className="font-bold text-lg mb-2">Split & Recombined</h3><p className="text-sm text-stone-500 mb-4">Domed shape.</p><ZoomableImage src="images/const-split-recombined.jpg" alt="Split and Recombined" containerClass="h-32 w-full" /></Card>
-                            <Card><h3 className="font-bold text-lg mb-2">Reversible</h3><p className="text-sm text-stone-500 mb-4">Two looks.</p><ZoomableImage src="images/const-reversible.jpg" alt="Reversible" containerClass="h-32 w-full" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Single Layer (Bridle)</h3><p className="text-sm text-stone-500 mb-4">Bridle leather is a single-ply construction — one full-thickness hide with no lamination or filler, delivering unmatched structural integrity and a belt that only gets better with age.</p><ZoomableImage src="images/const-single-layer.jpg" alt="Single Layer" containerClass="h-32 w-full" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Split & Recombined</h3><p className="text-sm text-stone-500 mb-4">The hide is split into two layers, a filler material is introduced between them, then the assembly is recombined into a single strap — allowing for a sculpted, domed profile that holds its shape over time.</p><ZoomableImage src="images/const-split-recombined.jpg" alt="Split and Recombined" containerClass="h-32 w-full" /></Card>
+                            <Card><h3 className="font-bold text-lg mb-2">Reversible</h3><p className="text-sm text-stone-500 mb-4">Finished on both the top and lining sides, a reversible belt is equally refined from either face — flip the strap for two completely distinct looks from a single belt.</p><ZoomableImage src="images/const-reversible.jpg" alt="Reversible" containerClass="h-32 w-full" /></Card>
                         </div>
                     </section>
 
@@ -1407,10 +1407,10 @@
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
-                                        { num: 1, part: "Cover Stitching", desc: "External stitching along the wallet's perimeter that secures the layers and adds a refined visual detail." },
-                                        { num: 2, part: "Cover", desc: "The outer panel — the primary surface defining visual identity, grain texture, and brand impression." },
-                                        { num: 3, part: "Embossing", desc: "A raised pattern, logo, or texture pressed into the leather cover using heat and pressure dies." },
-                                        { num: 4, part: "Ornament", desc: "A metal logo plate, rivet, or decorative hardware element applied to the exterior for branding and style." },
+                                        { num: 1, part: "Cover Stitching", desc: "Stitching around the wallet's outer edge. Secures the layers and is a key styling detail." },
+                                        { num: 2, part: "Cover", desc: "The outer shell of the wallet. Sets the look, feel, and first impression." },
+                                        { num: 3, part: "Embossing", desc: "A pattern or logo pressed into the leather surface using heat and pressure." },
+                                        { num: 4, part: "Ornament", desc: "A metal rivet, plate, or logo applied to the exterior for branding." },
                                         { num: 5, part: "Edge", desc: "The finished outer perimeter. Edge treatment (turned, cut, painted, burnished) signals construction quality." },
                                         { num: 6, part: "Spine", desc: "The folded center edge connecting front and back covers, allowing the wallet to open and fold flat." },
                                     ].map((item) => (
@@ -1435,12 +1435,12 @@
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
-                                        { num: 1, part: "Interior Stay", desc: "A reinforced center panel inside the bill compartment that provides structure and prevents distortion with use." },
-                                        { num: 2, part: "Bill Compartment", desc: "The main open pocket spanning the wallet's width, designed to hold folded currency." },
-                                        { num: 3, part: "Pocket", desc: "An open-ended flat or gusseted compartment for receipts, business cards, or small items beyond card slots." },
-                                        { num: 4, part: "Turned Edge", desc: "Raw leather edge folded over and stitched flat — a clean, durable, refined construction technique." },
-                                        { num: 5, part: "Embossed Logo", desc: "Brand mark pressed into the interior panel — typically a blind emboss for a subtle, premium feel." },
-                                        { num: 6, part: "Extra Capacity", desc: "Additional slots, gusseted pockets, or expandable compartments that increase storage beyond standard." },
+                                        { num: 1, part: "Interior Stay", desc: "A stiffener panel in the bill compartment that keeps the wallet's shape over time." },
+                                        { num: 2, part: "Bill Compartment", desc: "The main cash pocket, running the full width of the wallet." },
+                                        { num: 3, part: "Pocket", desc: "An open slot for receipts, business cards, or loose items." },
+                                        { num: 4, part: "Turned Edge", desc: "The leather edge folded over and stitched flat for a clean, durable finish." },
+                                        { num: 5, part: "Embossed Logo", desc: "The brand mark pressed into the interior — subtle and refined." },
+                                        { num: 6, part: "Extra Capacity", desc: "Additional card slots or expandable pockets beyond the standard layout." },
                                     ].map((item) => (
                                         <div key={item.num}
                                             className={`p-3 rounded-xl border cursor-default transition-all duration-200 ${activeWalletPart === ('int-' + item.num) ? 'bg-amber-50 border-amber-300 shadow-sm scale-[1.02]' : 'bg-white border-stone-100 hover:bg-amber-50/50 hover:border-amber-200'}`}
@@ -1489,15 +1489,16 @@
                         <SectionHeading subtitle="Techniques used to elevate the aesthetic and functionality.">Design & Branding Details</SectionHeading>
                         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                             {[
-                                { img: "detail-emboss.jpg", label: "Blind Emboss" },
-                                { img: "detail-perf.jpg", label: "Perforation (Perf)" },
-                                { img: "detail-hardware.jpg", label: "Metal Ornament" },
-                                { img: "detail-stitching.jpg", label: "Stitching Details" },
-                                { img: "detail-moneyclip.jpg", label: "Money Clip" },
+                                { img: "detail-emboss.jpg", label: "Blind Emboss", desc: "A logo or pattern pressed into the leather without ink or foil — a subtle, tactile mark that signals quality without shouting." },
+                                { img: "detail-perf.jpg", label: "Perforation (Perf)", desc: "Small punched holes arranged in a pattern to add visual texture, breathability, or a sporty, lightweight character." },
+                                { img: "detail-hardware.jpg", label: "Metal Ornament", desc: "A branded rivet, plate, or emblem on the exterior — the primary branding moment and a focal point for design intent." },
+                                { img: "detail-stitching.jpg", label: "Stitching Details", desc: "Color, thread weight, and stitch pattern work together as a classic styling tool — contrast thread makes a bold statement, tone-on-tone reads as refined, and a saddle stitch adds a heritage, handcrafted character." },
+                                { img: "detail-moneyclip.jpg", label: "Money Clip", desc: "Integrated into the wallet spine for quick-access cash storage. Comes in two forms: tension-loaded (a spring-steel clip that grips bills mechanically) or magnetic (a concealed magnet that holds bills flush and slim)." },
                             ].map((detail, i) => (
                                 <div key={i} className="space-y-3 p-4 bg-stone-50 rounded-2xl border border-stone-100">
                                     <ZoomableImage src={`images/${detail.img}`} alt={detail.label} containerClass="h-32 w-full" />
                                     <p className="text-xs font-bold text-center text-stone-700 uppercase">{detail.label}</p>
+                                    <p className="text-xs text-stone-500 text-center leading-relaxed">{detail.desc}</p>
                                 </div>
                             ))}
                         </div>
