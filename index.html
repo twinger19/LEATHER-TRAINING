@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Randa Accessories - Training 101</title>
 
+    <!-- Cache Control: prevent browsers from serving stale versions -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Version check: bump SITE_VERSION whenever you publish an update.
+         On the next visit, any browser holding an old version will hard-reload automatically. -->
+    <script>
+        (function () {
+            var SITE_VERSION = '1.0.0'; // ← change this (e.g. '1.0.1') each time you save an update
+            var key = 'randa_training_version';
+            var stored = localStorage.getItem(key);
+            if (stored && stored !== SITE_VERSION) {
+                localStorage.setItem(key, SITE_VERSION);
+                window.location.reload(true); // force fresh fetch from server, bypass cache
+            } else {
+                localStorage.setItem(key, SITE_VERSION);
+            }
+        })();
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
